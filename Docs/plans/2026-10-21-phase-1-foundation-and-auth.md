@@ -66,7 +66,8 @@
 - Money/quantity diserialisasi sebagai string, 2 desimal untuk uang, 3 desimal untuk quantity.
 - Bahasa antarmuka: Bahasa Indonesia.
 - Tidak ada dependensi baru di luar daftar di Tech Stack.
-- **Test backend memakai database `cinnamon_v2` yang sama dengan dev** (bukan `:memory:`, bukan database terpisah), dibungkus trait `DatabaseTransactions` sehingga setiap test rollback otomatis. Tidak membuat folder/database test tambahan.
+- **Test backend memakai database `cinnamon_v2` yang sama dengan dev** (bukan `:memory:`, bukan database terpisah), dibungkus trait `DatabaseTransactions` sehingga setiap test rollback otomatis. Tidak membuat **database** test tambahan. Folder test tetap satu: `backend/tests/` (konvensi Laravel, sudah dipakai `composer.json` `autoload-dev` dan `phpunit.xml`). Yang dilarang adalah folder/database test *duplikat* di luar `backend/tests/`.
+- **Kode produksi backend ditulis langsung di tempatnya** — `backend/app/…`, `backend/routes/`, `backend/config/`, `backend/database/`, `backend/bootstrap/`. Kode test hanya di `backend/tests/`. Kode produksi tidak boleh ditulis di `backend/tests/`, dan kode test tidak boleh ditulis di `backend/app/`. Kalau sebuah task menulis keduanya, blok `Files:` memisahkannya jadi dua grup dan commit-nya dipecah jadi dua commit — produksi lebih dulu, test menyusul.
 - Database `cinnamon` berisi fixture TA legacy (4 penerimaan, 4 penjualan, 9 baris ledger, 2 batch) dengan tabel `produks`, `produk_masuks`, `buku_besars`, `batch_stoks`. Database itu **tidak boleh** dipakai untuk schema baru dan tidak boleh dihapus — Plan Phase 2/3 memakainya sebagai acceptance example.
 - `mysql.exe` ada di `C:\xampp\mysql\bin\mysql.exe` dengan user `root` dan password kosong.
 
@@ -384,7 +385,7 @@ cd /d/DEV/0.AI/Cinnamon2 && git add backend/config/app.php backend/config/cors.p
 - Create: `backend/app/Support/ApiResponse.php`
 - Create: `backend/app/Http/Middleware/RequestIdMiddleware.php`
 - Modify: `backend/bootstrap/app.php`
-- Create: `backend/tests/Feature/ErrorEnvelopeTest.php`
+- Test: `backend/tests/Feature/ErrorEnvelopeTest.php`
 
 **Interfaces:**
 - Consumes: `bootstrap/app.php` dari Phase 0.
@@ -666,7 +667,8 @@ Expected: PASS — 5 test, 5 assertion sets green.
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Support backend/app/Http/Middleware backend/bootstrap/app.php backend/tests/Feature/ErrorEnvelopeTest.php && git commit -m "backend: add api envelope, request id middleware, and error renderer"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Support backend/app/Http/Middleware backend/bootstrap/app.php && git commit -m "backend: add api envelope, request id middleware, and error renderer"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests/Feature/ErrorEnvelopeTest.php && git commit -m "test(backend): cover the api error envelope"
 ```
 
 ---
@@ -675,8 +677,10 @@ cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Support backend/app/Http/Middlew
 
 **Files:**
 - Modify: `backend/app/Models/User.php`
+- Create: `backend/app/Policies/UserPolicy.php`
 - Modify: `backend/app/Providers/AppServiceProvider.php`
-- Create: `backend/tests/Feature/HealthTest.php`
+- Modify: `backend/routes/api.php`
+- Test: `backend/tests/Feature/HealthTest.php`
 
 **Interfaces:**
 - Consumes: migration `users` dari Phase 0 (kolom `id` char(36), `role` ENUM, `is_active`).
@@ -881,7 +885,8 @@ Expected: PASS.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Models/User.php backend/app/Policies/UserPolicy.php backend/app/Providers/AppServiceProvider.php backend/routes/api.php backend/tests/Feature/HealthTest.php && git commit -m "backend: finalize user model with uuid v7, role helpers, and admin-only user policy"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Models/User.php backend/app/Policies/UserPolicy.php backend/app/Providers/AppServiceProvider.php backend/routes/api.php && git commit -m "backend: finalize user model with uuid v7, role helpers, and admin-only user policy"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests/Feature/HealthTest.php && git commit -m "test(backend): cover health envelope, uuid v7 key, and 404"
 ```
 
 ---
@@ -1093,16 +1098,29 @@ cd /d/DEV/0.AI/Cinnamon2 && git add backend/database/migrations/0001_01_01_00000
 
 ---
 
-## Task 6: `TestCase` dengan `DatabaseTransactions` dan auth test suite
+## Task 6: Endpoint auth lengkap dan auth test suite
 
-**Files:**
+Task ini menulis kode produksi **dan** kode test, jadi tiap file ditandai grupnya dan commit-nya dipecah dua (§ Global Constraints: kode produksi dan kode test tidak bercampur dalam satu commit).
+
+**Files (produksi — ditulis di `backend/app/` dan `backend/routes/`):**
+- Modify: `backend/routes/api.php`
+- Create: `backend/app/Http/Controllers/Api/V1/AuthController.php`
+- Create: `backend/app/Http/Controllers/Api/V1/UserController.php`
+- Modify: `backend/app/Http/Requests/Auth/LoginRequest.php`
+- Create: `backend/app/Http/Requests/Auth/UpdatePasswordRequest.php`
+- Modify: `backend/app/Http/Resources/UserResource.php`
+
+**Files (test — ditulis di `backend/tests/`):**
 - Modify: `backend/tests/TestCase.php`
-- Create: `backend/tests/Feature/Auth/AuthenticationTest.php`
-- Create: `backend/tests/Feature/Auth/AuthorizationTest.php`
+- Test: `backend/tests/Feature/Auth/AuthenticationTest.php`
+- Test: `backend/tests/Feature/Auth/AuthorizationTest.php`
 
 **Interfaces:**
 - Consumes: `User` model + factory dari Task 4–5; envelope dari Task 3.
 - Produces:
+  - `App\Http\Controllers\Api\V1\AuthController` — `login`, `logout`, `me`, `updateMe`, `updatePassword`.
+  - `App\Http\Controllers\Api\V1\UserController` — `index` (hanya Admin).
+  - `App\Http\Requests\Auth\UpdatePasswordRequest` — validasi `current_password`, `password`, `password_confirmation`.
   - `Tests\TestCase` memakai trait `Illuminate\Foundation\Testing\DatabaseTransactions` → tiap test rollback otomatis, tidak menghapus data dev.
   - `Tests\Feature\Auth\AuthenticationTest` — login sukses/gagal, user tidak aktif ditolak, session ada setelah login, logout memutus session, `/me` butuh auth.
   - `Tests\Feature\Auth\AuthorizationTest` — Karyawan ke endpoint Admin dapat 403 (bukan 401), Admin boleh.
@@ -1622,7 +1640,8 @@ Expected: PASS — 11 test hijau.
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Http backend/routes/api.php backend/tests && git commit -m "backend: add auth endpoints, user listing, and authorization tests"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/app/Http backend/routes/api.php && git commit -m "backend: add auth endpoints and the admin-only user listing"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests && git commit -m "test(backend): cover authentication and authorization"
 ```
 
 ---
@@ -1658,7 +1677,8 @@ Expected: exit 0 tanpa offense. Jika ada offense, jalankan `./vendor/bin/pint` l
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add -A backend && git commit -m "backend: apply pint formatting" || echo "no formatting changes"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/app backend/routes backend/config backend/bootstrap backend/database && git commit -m "style: apply pint formatting to backend production code" || echo "no formatting changes"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests && git commit -m "style: apply pint formatting to backend tests" || echo "no formatting changes"
 ```
 
 ---
@@ -1666,7 +1686,7 @@ cd /d/DEV/0.AI/Cinnamon2 && git add -A backend && git commit -m "backend: apply 
 ## Task 8: Review Focus — auth & authorization edge cases
 
 **Files:**
-- Create: `backend/tests/Feature/Auth/AuthEdgeCaseTest.php`
+- Test: `backend/tests/Feature/Auth/AuthEdgeCaseTest.php`
 
 **Interfaces:**
 - Consumes: seluruh endpoint dari Task 6.
@@ -1760,7 +1780,7 @@ Expected: PASS — 5 test hijau. Kalau `test_inactive_user_cannot_login_and_no_s
 - [ ] **Step 3: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests/Feature/Auth/AuthEdgeCaseTest.php && git commit -m "backend: cover auth and authorization edge cases"
+cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests/Feature/Auth/AuthEdgeCaseTest.php && git commit -m "test(backend): cover auth and authorization edge cases"
 ```
 
 ---
@@ -1772,13 +1792,13 @@ cd /d/DEV/0.AI/Cinnamon2 && git add backend/tests/Feature/Auth/AuthEdgeCaseTest.
 - Create: `frontend/src/styles/tokens.css`
 - Modify: `frontend/src/index.css`
 - Create: `frontend/src/lib/formatters/number.ts`
-- Create: `frontend/src/lib/formatters/number.test.ts`
+- Test: `frontend/src/lib/formatters/number.test.ts`
 - Create: `frontend/src/lib/api/errors.ts`
 - Modify: `frontend/src/lib/api/client.ts`
 - Modify: `frontend/src/lib/api/types.ts`
 - Modify: `frontend/vite.config.ts`
 - Modify: `frontend/index.html`
-- Create: `frontend/src/test/setup.ts`
+- Test: `frontend/src/test/setup.ts`
 
 **Interfaces:**
 - Consumes: kontrak `/api/v1/auth/login`, `/api/v1/me`, envelope dari Task 3.
@@ -2247,7 +2267,8 @@ Expected: `tsc -b` tanpa error; `vite build` menghasilkan `dist/`. Jika `import.
 - [ ] **Step 14: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add frontend && git commit -m "frontend: add design tokens, api client with xsrf, and number formatters"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/package.json frontend/src/styles frontend/src/index.css frontend/src/lib/api frontend/src/lib/formatters/number.ts frontend/vite.config.ts frontend/index.html frontend/src/test && git commit -m "frontend: add design tokens, api client with xsrf, and number formatters"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/lib/formatters/number.test.ts && git commit -m "test(frontend): cover the money and quantity formatters"
 ```
 
 ---
@@ -2547,7 +2568,7 @@ Expected: file terhapus; `src/assets/` menjadi kosong dan bisa dihapus (`rmdir s
 - [ ] **Step 8: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add -A frontend && git commit -m "frontend: add auth provider, guard, and protected router"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/app frontend/src/features/auth frontend/src/main.tsx && git commit -m "frontend: add auth provider, guard, and protected router"
 ```
 
 ---
@@ -2981,7 +3002,7 @@ export function NotFoundPage() {
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src && git commit -m "frontend: add app shell, sidebar, topbar, and page state components"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/app frontend/src/components frontend/src/features/dashboard frontend/src/features/misc && git commit -m "frontend: add app shell, sidebar, topbar, and page state components"
 ```
 
 ---
@@ -2992,7 +3013,7 @@ cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src && git commit -m "frontend: add
 - Modify: `frontend/src/features/auth/LoginPage.tsx`
 - Create: `frontend/src/features/auth/LoginPage.css`
 - Create: `frontend/src/features/auth/ProfilePage.tsx`
-- Create: `frontend/src/features/auth/LoginPage.test.tsx`
+- Test: `frontend/src/features/auth/LoginPage.test.tsx`
 
 **Interfaces:**
 - Consumes: `useAuth()` dari Task 10; `AuthProvider` membungkus router.
@@ -3479,7 +3500,8 @@ Expected: PASS — 3 test hijau.
 - [ ] **Step 7: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/features/auth && git commit -m "frontend: build login and profile pages with accessible form feedback"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/features/auth/LoginPage.tsx frontend/src/features/auth/LoginPage.css frontend/src/features/auth/ProfilePage.tsx && git commit -m "frontend: build login and profile pages with accessible form feedback"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/features/auth/LoginPage.test.tsx && git commit -m "test(frontend): cover the login form behaviour"
 ```
 
 ---
@@ -3487,8 +3509,9 @@ cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/features/auth && git commit -m 
 ## Task 13: Frontend — test guard, session-expiry handling, dan verifikasi build
 
 **Files:**
-- Create: `frontend/src/features/auth/AuthGuard.test.tsx`
 - Modify: `frontend/src/lib/api/client.ts`
+- Test: `frontend/src/features/auth/AuthGuard.test.tsx`
+- Test: `frontend/src/lib/api/client.test.ts`
 
 **Interfaces:**
 - Consumes: `AuthGuard`, `AuthProvider` dari Task 10; `toApiError` dari Task 9.
@@ -3635,7 +3658,8 @@ Expected: ESLint tanpa error; `tsc -b` tanpa error; `vite build` menghasilkan `d
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /d/DEV/0.AI/Cinnamon2 && git add frontend && git commit -m "frontend: add auth guard tests and session expiry handling"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/lib/api/client.ts && git commit -m "frontend: handle session expiry in the api client"
+cd /d/DEV/0.AI/Cinnamon2 && git add frontend/src/features/auth/AuthGuard.test.tsx frontend/src/lib/api/client.test.ts && git commit -m "test(frontend): cover the auth guard and session expiry"
 ```
 
 ---
@@ -3737,8 +3761,9 @@ cd /d/DEV/0.AI/Cinnamon2 && git add Docs && git commit -m "docs: add setup guide
    - "tidak ada secret di frontend atau repository" → Task 1 Step 5, Task 8 (`test_error_response_never_leaks_internals`).
 
 2. **Step scan:** Setiap langkah berisi satu aksi dengan hasil yang bisa dicek. Tidak ada "TBD" atau "tangani edge case" tanpa instruksi. Task 6 Step 6 memuat dua versi method `index` — versi kedua yang(final) menggantikan yang pertama; jalankan yang kedua.
+3. **Pemisahan produksi vs test:** Tiap task yang menulis kode produksi dan kode test memisahkannya di blok `Files:` jadi dua grup dan memecah commit-nya jadi dua (produksi dulu, test menyusul). Tidak ada `git add` yang mencampur `backend/app` dengan `backend/tests`, dan tidak ada `git add -A` yang menelan keduanya.
 
-3. **Type consistency:**
+4. **Type consistency:**
    - `App\Support\ApiResponse::success(mixed $data, int $status = 200)` dan `::error(string $code, string $message, array $fields = [], array $details = [], int $status = 422)` — dipakai di Task 3, 4, 6.
    - `App\Support\RequestId::current(): string` — dipakai di middleware, `ApiResponse`, exception renderer.
    - `App\Models\User::isAdmin(): bool` — dipakai di `UserPolicy` (Task 4).
@@ -3748,7 +3773,7 @@ cd /d/DEV/0.AI/Cinnamon2 && git add Docs && git commit -m "docs: add setup guide
    - `formatMoney` / `formatQuantity` — didefinisikan di Task 9, diuji di Task 9, dipakai di Phase 2+.
    - Semua pengimpor `useAuth` menarik dari `features/auth/auth-context`, bukan dari `AuthProvider` (rule `react-refresh/only-export-components` menolak file yang mencampur komponen dan hook).
 
-4. **Verifikasi empiris (bukan asumsi):**
+5. **Verifikasi empiris (bukan asumsi):**
    - `withRouting(apiPrefix: 'api/v1')` tersedia di `ApplicationBuilder` Laravel 13.37 (`vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php:162`).
    - `HasUuids` di Laravel 13 sudah memanggil `Str::uuid7()` — `newUniqueId()` tidak perlu di-override (diverifikasi di `vendor/.../Concerns/HasUuids.php:18`).
    - `Str::isUuid()` menerima UUID v4 maupun v7 (diverifikasi lewat `php -r`).
