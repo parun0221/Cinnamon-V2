@@ -30,6 +30,19 @@ class AuthController extends Controller
             );
         }
 
+        // A session is only started for stateful requests — those whose Referer
+        // or Origin matches sanctum.stateful. Without one, logging in would
+        // throw "Session store not set on request".
+        if (! $request->hasSession()) {
+            return ApiResponse::error(
+                'FORBIDDEN',
+                'Permintaan login harus berasal dari origin yang diizinkan.',
+                [],
+                [],
+                403,
+            );
+        }
+
         Auth::guard('web')->login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 

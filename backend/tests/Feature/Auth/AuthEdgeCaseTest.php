@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -25,6 +26,33 @@ class AuthEdgeCaseTest extends TestCase
         $this->assertSame(419, $response->getStatusCode());
         $this->assertSame('UNAUTHENTICATED', $response->getData(true)['error']['code']);
         $this->assertNotEmpty($response->getData(true)['meta']['request_id']);
+    }
+
+    /**
+     * A request whose Origin is not a stateful domain must be rejected with a
+     * 403, not a 500. Laravel rewrites OriginMismatchException to
+     * HttpException(403) before render callbacks run.
+     */
+    public function test_cross_origin_request_is_forbidden_not_a_server_error(): void
+    {
+        User::factory()->admin()->create([
+            'email' => 'admin@test.local',
+            'password' => Hash::make('password'),
+        ]);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'admin@test.local',
+            'password' => 'password',
+        ], [
+            'origin' => 'http://evil.example.com',
+            'referer' => 'http://evil.example.com/',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('error.code', 'FORBIDDEN')
+            ->assertJsonStructure(['error' => ['code', 'message', 'fields', 'details'], 'meta' => ['request_id']]);
+
+        $this->assertGuest();
     }
 
     public function test_inactive_user_cannot_login_and_no_session_row_is_created(): void
