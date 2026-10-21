@@ -58,7 +58,7 @@ Backend (`cd backend && php artisan test`) — **36 passed (168 assertions)**:
 - `remember` — a login with `"remember": true` sets the long-lived `remember_web_*` cookie;
   without it, no remember cookie is issued.
 
-Frontend (`cd frontend && npm test`) — **19 passed**:
+Frontend (`cd frontend && npm test`) — **22 passed**:
 
 - `number.test.ts` — money and quantity formatting.
 - `client.test.ts` — 419 → "sesi berakhir", server error envelope parsing, network failure.
@@ -67,6 +67,9 @@ Frontend (`cd frontend && npm test`) — **19 passed**:
 - `AuthGuard.test.tsx` — guest redirected to login, authenticated user reaches the route.
 - `AuthProvider.test.tsx` — the local session is cleared on logout, both when the server
   call succeeds and when it fails with a stale CSRF token.
+- `LoginPage.test.tsx` — labelled fields, redirect on success, server error shown, network
+  error shown, input preserved after error, error linked to the fields via
+  `aria-describedby`, submit button disabled while in flight.
 
 Static checks: `npx tsc -b` clean, `npm run lint` clean, `npm run build` produces `dist/`.
 
