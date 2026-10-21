@@ -9,7 +9,7 @@ Route::get('/health', fn () => ApiResponse::success([
     'status' => 'ok',
 ]));
 
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 Route::patch('/me', [AuthController::class, 'updateMe'])->middleware('auth:sanctum');
