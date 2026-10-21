@@ -38,7 +38,7 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **37 passed (177 assertions)**:
+Backend (`cd backend && php artisan test`) — **47 passed (210 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
@@ -56,6 +56,12 @@ Backend (`cd backend && php artisan test`) — **37 passed (177 assertions)**:
   `Accept: application/json` header still answers 401.
 - `LoginRateLimitTest` — six failed logins for one email return 429 `RATE_LIMITED`; a
   correct login within the limit still succeeds.
+- `LoginInputTest` — a JSON array or object `email` answers 422 instead of 500, a
+  non-string email still counts against the rate limit, and the origin check answers
+  403 identically whether the credentials are right or wrong.
+- `SchemaTest` — `users.id` is a UUID column, the `sessions` table exists, the
+  `role`/`is_active`/`last_login_at` columns exist, and `personal_access_tokens` uses a
+  UUID `tokenable_id`.
 - `remember` — a login with `"remember": true` sets the long-lived `remember_web_*` cookie;
   without it, no remember cookie is issued.
 
@@ -91,6 +97,9 @@ Vite proxy:
 | CSRF token mismatch | 419 `UNAUTHENTICATED` |
 | Login from a non-stateful origin | 403 `FORBIDDEN` (was a 500 before the fix) |
 | Guest request without an `Accept` header | 401 `UNAUTHENTICATED` (was a 500 before the fix) |
+| Login with a JSON-array `email` | 422 `VALIDATION_ERROR` (was a 500 before the fix) |
+| Hostile origin, correct vs wrong password | 403 `FORBIDDEN` in both cases (no enumeration oracle) |
+| Malformed `X-Request-Id` header | replaced with a fresh UUID |
 | Six failed logins for one email | 429 `RATE_LIMITED` after five attempts |
 | Secrets scan of `frontend/src` and `frontend/public` | 0 matches |
 
