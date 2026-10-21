@@ -38,7 +38,7 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **32 passed (148 assertions)**:
+Backend (`cd backend && php artisan test`) — **34 passed (164 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
@@ -53,6 +53,8 @@ Backend (`cd backend && php artisan test`) — **32 passed (148 assertions)**:
 - `TimestampTest` — timestamps carry the `+07:00` offset.
 - `ErrorEnvelopeTest` — envelope shape on validation/unauthenticated/404, no stack trace in
   the message, `request_id` unique per request.
+- `LoginRateLimitTest` — six failed logins for one email return 429 `RATE_LIMITED`; a
+  correct login within the limit still succeeds.
 
 Frontend (`cd frontend && npm test`) — **19 passed**:
 
@@ -82,6 +84,7 @@ Vite proxy:
 | `POST /api/v1/auth/logout` then `GET /api/v1/me` | 200 then 401 `UNAUTHENTICATED` |
 | CSRF token mismatch | 419 `UNAUTHENTICATED` |
 | Login from a non-stateful origin | 403 `FORBIDDEN` (was a 500 before the fix) |
+| Six failed logins for one email | 429 `RATE_LIMITED` after five attempts |
 | Secrets scan of `frontend/src` and `frontend/public` | 0 matches |
 
 Browser check (headless Chrome against the Vite dev server):
