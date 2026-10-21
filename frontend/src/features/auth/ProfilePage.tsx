@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { updateProfile } from '../../lib/api/client'
 import { useAuth } from './auth-context'
+import './ProfilePage.css'
 
 export function ProfilePage() {
   const { user, refresh } = useAuth()
