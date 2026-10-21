@@ -1,0 +1,41 @@
+:root {
+  /* Warna — Design.md §2 */
+  --brand-700: #6b341f;
+  --brand-600: #8b4a2f;
+  --brand-100: #f4e4d8;
+  --accent-600: #c88719;
+  --success-700: #246344;
+  --danger-700: #b42318;
+  --ink-900: #1f2933;
+  --ink-600: #52606d;
+  --line: #d9e2ec;
+  --surface: #ffffff;
+  --canvas: #f7f5f2;
+
+  /* Spasi — basis 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Bentuk */
+  --radius-card: 10px;
+  --radius-input: 8px;
+  --radius-button: 8px;
+
+  /* Tipografi */
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-size-body: 14px;
+  --line-height-body: 1.5;
+  --font-size-page-title: 24px;
+  --font-size-section-title: 18px;
+  --font-size-table: 13px;
+
+  /* Transisi */
+  --transition-fast: 150ms ease;
+
+  /* Fokus — kontras ≥ 3:1 */
+  --focus-ring: 0 0 0 3px var(--brand-100);
+}

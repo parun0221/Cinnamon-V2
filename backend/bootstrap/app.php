@@ -35,13 +35,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException => 'NOT_FOUND',
                 $e instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException => 'BAD_REQUEST',
                 $e instanceof \Illuminate\Http\Exceptions\ThrottleRequestsException => 'RATE_LIMITED',
-                $e instanceof \Illuminate\Session\TokenMismatchException => 'UNAUTHENTICATED',
+                // Laravel rewrites TokenMismatchException to HttpException(419)
+                // before render callbacks run, so the status is what survives.
+                $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+                    && $e->getStatusCode() === 419 => 'UNAUTHENTICATED',
                 default => 'SERVER_ERROR',
             };
 
             $status = match ($code) {
                 'VALIDATION_ERROR' => 422,
-                'UNAUTHENTICATED' => $e instanceof \Illuminate\Session\TokenMismatchException ? 419 : 401,
+                'UNAUTHENTICATED' => $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+                    && $e->getStatusCode() === 419 ? 419 : 401,
                 'FORBIDDEN' => 403,
                 'NOT_FOUND' => 404,
                 'BAD_REQUEST' => 400,
@@ -51,7 +55,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
             $message = match ($code) {
                 'VALIDATION_ERROR' => 'Validasi gagal.',
-                'UNAUTHENTICATED' => $e instanceof \Illuminate\Session\TokenMismatchException
+                'UNAUTHENTICATED' => $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException
+                    && $e->getStatusCode() === 419
                     ? 'Sesi Anda telah berakhir. Silakan muat ulang halaman.'
                     : 'Sesi tidak valid.',
                 'FORBIDDEN' => 'Akses tidak diizinkan.',

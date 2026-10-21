@@ -1,0 +1,141 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.shell__sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+  background: var(--brand-700);
+  color: var(--surface);
+}
+
+.shell__brand {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.shell__nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.shell__nav a {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  color: var(--brand-100);
+  text-decoration: none;
+  border-radius: var(--radius-input);
+}
+
+.shell__nav a:hover {
+  background: var(--brand-600);
+  color: var(--surface);
+}
+
+.shell__nav a.active {
+  background: var(--brand-600);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+.shell__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shell__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.shell__page-title {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.shell__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.shell__user-name {
+  font-weight: 600;
+}
+
+.shell__user-role {
+  padding: 2px var(--space-2);
+  color: var(--brand-700);
+  background: var(--brand-100);
+  border-radius: var(--radius-input);
+  font-size: 12px;
+}
+
+.shell__logout {
+  padding: var(--space-1) var(--space-3);
+  color: var(--ink-900);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-button);
+}
+
+.shell__logout:hover {
+  border-color: var(--brand-600);
+  color: var(--brand-700);
+}
+
+.shell__content {
+  flex: 1;
+  max-width: 1440px;
+  width: 100%;
+  padding: var(--space-6);
+}
+
+.dashboard__intro {
+  color: var(--ink-600);
+}
+
+.dashboard__facts {
+  display: flex;
+  gap: var(--space-8);
+  margin: var(--space-4) 0 0;
+}
+
+.dashboard__facts dt {
+  font-size: 12px;
+  color: var(--ink-600);
+}
+
+.dashboard__facts dd {
+  margin: var(--space-1) 0 0;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .shell {
+    flex-direction: column;
+  }
+
+  .shell__sidebar {
+    width: 100%;
+  }
+}

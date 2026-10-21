@@ -102,6 +102,14 @@ class AuthenticationTest extends TestCase
             ->assertJsonStructure(['error' => ['code', 'message', 'fields' => ['email', 'password']]]);
     }
 
+    public function test_validation_messages_are_in_indonesian(): void
+    {
+        $response = $this->postJson('/api/v1/auth/login', [], $this->frontendHeaders);
+
+        $this->assertSame('email wajib diisi.', $response->json('error.fields.email.0'));
+        $this->assertSame('password wajib diisi.', $response->json('error.fields.password.0'));
+    }
+
     public function test_me_returns_the_authenticated_user(): void
     {
         $user = User::factory()->karyawan()->create();
