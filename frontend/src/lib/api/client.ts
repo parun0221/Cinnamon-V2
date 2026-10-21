@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { parseApiError, type ApiError } from './errors'
-import type { Envelope, User } from './types'
+import type { Envelope, PaginatedEnvelope, User, UserRole } from './types'
 
 const apiClient: AxiosInstance = axios.create({
   // Relative by default so dev traffic goes through the Vite proxy and stays
@@ -55,6 +55,42 @@ export async function updateProfile(payload: { name: string }): Promise<User> {
   const response = await apiClient.patch<Envelope<User>>('/api/v1/me', payload)
 
   return response.data.data
+}
+
+export async function updatePassword(payload: {
+  current_password: string
+  password: string
+  password_confirmation: string
+}): Promise<void> {
+  await apiClient.post('/api/v1/me/password', payload)
+}
+
+export async function fetchUsers(page = 1): Promise<PaginatedEnvelope<User>> {
+  const { data } = await apiClient.get<PaginatedEnvelope<User>>('/api/v1/users', {
+    params: { page },
+  })
+
+  return data
+}
+
+export async function createUser(payload: {
+  name: string
+  email: string
+  password: string
+  role: UserRole
+}): Promise<User> {
+  const { data } = await apiClient.post<Envelope<User>>('/api/v1/users', payload)
+
+  return data.data
+}
+
+export async function updateUser(
+  id: string,
+  payload: { name?: string; email?: string; role?: UserRole; is_active?: boolean },
+): Promise<User> {
+  const { data } = await apiClient.patch<Envelope<User>>(`/api/v1/users/${id}`, payload)
+
+  return data.data
 }
 
 export function toApiError(error: unknown): ApiError {
