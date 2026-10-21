@@ -90,6 +90,15 @@ Tidak ada file test baru — suite yang ada dipakai sebagai jaring regresi.
 | `frontend/npm test` | 22 passed |
 | `cinnamon_v2.users` setelah verifikasi | 2 baris seed, `is_active` = 1, password = `password` |
 
+### Instalasi bersih
+
+| Pemeriksaan | Hasil |
+|---|---|
+| `migrate:fresh --seed` pada database kosong | 10 tabel dibuat, 2 akun seed |
+| `migrate:rollback` | Kembali ke 1 tabel (tabel `migrations`) |
+| Database `cinnamon` (legacy) | 19 tabel utuh, tidak tersentuh |
+| Jalur `retrieveByToken` (cookie "ingat saya") | Cookie remember berlaku; user yang dinonaktifkannya menjawab 401 |
+
 ## Keputusan yang diambil saat pengerjaan
 
 1. **`current_password` perlu pesan Bahasa Indonesia.** Rule bawaan Laravel tidak
