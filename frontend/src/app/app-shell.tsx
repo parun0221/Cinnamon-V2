@@ -1,39 +1,34 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet } from 'react-router-dom'
+import { Sidebar } from '../components/layout/Sidebar'
+import { Topbar } from '../components/layout/Topbar'
 import { useAuth } from '../features/auth/auth-context'
+import { navGroupsForRole } from './navigation'
 import './app-shell.css'
 
 export function AppShell() {
   const { user, logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const groups = navGroupsForRole(user?.role)
 
   return (
     <div className="shell">
-      <aside className="shell__sidebar">
-        <p className="shell__brand">CINNAMON</p>
-        <nav aria-label="Navigasi utama">
-          <ul className="shell__nav">
-            <li>
-              <NavLink to="/" end>
-                Dashboard
-              </NavLink>
-            </li>
-            <li>
-              <NavLink to="/profile">Profil</NavLink>
-            </li>
-          </ul>
-        </nav>
+      <aside
+        id="app-sidebar"
+        className={`shell__sidebar ${menuOpen ? 'shell__sidebar--open' : ''}`}
+      >
+        <Sidebar groups={groups} onNavigate={() => setMenuOpen(false)} />
       </aside>
 
       <div className="shell__body">
-        <header className="shell__topbar">
-          <h1 className="shell__page-title">CINNAMON</h1>
-          <div className="shell__user">
-            <span className="shell__user-name">{user?.name}</span>
-            <span className="shell__user-role">{user?.role === 'admin' ? 'Admin' : 'Karyawan'}</span>
-            <button type="button" className="shell__logout" onClick={() => void logout()}>
-              Keluar
-            </button>
-          </div>
-        </header>
+        <Topbar
+          title="CINNAMON"
+          user={user}
+          onLogout={() => void logout()}
+          onToggleMenu={() => setMenuOpen((open) => !open)}
+          menuOpen={menuOpen}
+        />
 
         <main className="shell__content">
           <Outlet />

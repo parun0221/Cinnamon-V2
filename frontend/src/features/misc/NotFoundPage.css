@@ -1,0 +1,43 @@
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 520px;
+  padding: var(--space-8) var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+.not-found__code {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--brand-600);
+}
+
+.not-found__title {
+  font-size: var(--font-size-page-title);
+}
+
+.not-found__message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-600);
+}
+
+.not-found__action {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--brand-600);
+  border-radius: var(--radius-button);
+  text-decoration: none;
+}
+
+.not-found__action:hover {
+  background: var(--brand-700);
+}

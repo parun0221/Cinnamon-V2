@@ -1,0 +1,86 @@
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+.page-state__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--ink-900);
+}
+
+.page-state__message {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-600);
+}
+
+.page-state--error {
+  border-color: #f3c9c6;
+  background: #fdf1f0;
+}
+
+.page-state--error .page-state__title {
+  color: var(--danger-700);
+}
+
+.page-state__action {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--brand-600);
+  border: 1px solid var(--brand-600);
+  border-radius: var(--radius-button);
+}
+
+.page-state__action:hover {
+  background: var(--brand-700);
+}
+
+.page-state__label {
+  font-size: 13px;
+  color: var(--ink-600);
+}
+
+.page-state__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.page-state__skeleton span {
+  display: block;
+  height: 12px;
+  background: var(--line);
+  border-radius: var(--radius-input);
+  animation: page-state-pulse 1.4s ease-in-out infinite;
+}
+
+.page-state__skeleton span:nth-child(2) {
+  width: 80%;
+}
+
+.page-state__skeleton span:nth-child(3) {
+  width: 60%;
+}
+
+@keyframes page-state-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
