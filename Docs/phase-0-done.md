@@ -35,6 +35,10 @@ execution ledger; the ones that change what a user sees are:
 7. **The frontend API client defaults to a relative base URL.** Dev traffic goes through
    the Vite proxy, keeping the Sanctum session cookie first-party. Deployments on another
    origin set `VITE_API_URL`.
+8. **Backend code sits in its proper place.** Production code is under `backend/app/`,
+   `backend/routes/`, `backend/config/`, `backend/database/`, `backend/bootstrap/`; test
+   code is under `backend/tests/`. Nothing production-side was written into `backend/tests/`.
+   See `Docs/decisions.md` §9.
 
 ## Verification actually run
 

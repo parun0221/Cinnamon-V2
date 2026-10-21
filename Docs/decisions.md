@@ -75,6 +75,16 @@ All six decisions below were confirmed before any migration or API change. Refer
 
 **Affected:** Database.md section 5 ("cancellation of a posted document uses a reversing operation"), API.md §5.3.
 
+## 9. Backend file placement and test database
+
+**Decision:** backend production code is written directly in its proper place — `backend/app/…`, `backend/routes/`, `backend/config/`, `backend/database/`, `backend/bootstrap/`. Backend test code goes in `backend/tests/`, the Laravel convention already wired into `composer.json` (`autoload-dev`) and `phpunit.xml`. Production code is never written under `backend/tests/`, and test code is never written under `backend/app/`. There is exactly one test folder; no duplicate test folder is created.
+
+**Test database:** backend tests run against the same database the app uses (`cinnamon_v2`), wrapped in the `DatabaseTransactions` trait so every test rolls back. No separate test database is created. A separate database is used only for verifying `migrate:fresh` and rollback.
+
+**Commits:** a change that touches both production and test code is committed in two commits — production first, test second — so neither diff is contaminated by the other.
+
+**Affected:** `Docs/AGENTS.md` §5 and §8, `Docs/Architecture.md` §7, `Docs/plans/2026-10-21-phase-1-foundation-and-auth.md` Global Constraints and Tasks 3, 4, 6, 7, 8, 9, 12, 13.
+
 ---
 
 **Open / blocked decisions:** none. All six roadmap open items are resolved here.

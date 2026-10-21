@@ -71,6 +71,14 @@ Buat implementation plan per fase dari Docs/roadmap.md menggunakan skill penulis
 
 ## 5. Aturan backend
 
+### Penempatan berkas
+
+Kode produksi backend ditulis langsung di tempatnya: `backend/app/…` (Http, Models, Policies, Support, Actions, Queries), `backend/routes/`, `backend/config/`, `backend/database/`, dan `backend/bootstrap/`. Kode test ditulis di `backend/tests/` mengikuti konvensi Laravel. Kode produksi tidak boleh ditulis di `backend/tests/`, dan kode test tidak boleh ditulis di `backend/app/`. Jangan membuat folder test duplikat di luar `backend/tests/`.
+
+Test backend memakai database dev yang sama dengan aplikasi, bukan database terpisah, dan dibungkus trait `DatabaseTransactions` sehingga setiap test rollback otomatis. Database pengujian terpisah tetap dibutuhkan khusus untuk verifikasi `migrate:fresh` dan rollback.
+
+### Batas tanggung jawab
+
 Gunakan batas tanggung jawab sesuai kebutuhan nyata:
 
 - Route menghubungkan endpoint dan middleware; tidak memuat aturan bisnis.
@@ -126,7 +134,7 @@ Untuk perubahan backend, pilih pemeriksaan yang relevan:
 - Unit test untuk aturan domain seperti FIFO, HPP, profit, quantity, dan status.
 - Feature test untuk validasi, autentikasi, policy, endpoint, dan response.
 - Transaction/concurrency test untuk stok tidak cukup, retry, duplicate posting, rollback, dan locking.
-- Migration fresh/rollback pada database pengujian yang terpisah.
+- Migration fresh/rollback pada database pengujian yang terpisah (satu-satunya pemeriksaan yang memakai database terpisah — test biasa jalan di database dev dengan `DatabaseTransactions`).
 
 Untuk perubahan frontend:
 

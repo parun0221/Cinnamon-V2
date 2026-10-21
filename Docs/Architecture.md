@@ -173,7 +173,13 @@ backend/
     web.php
   bootstrap/
   config/
+  tests/
+    Feature/
+    Unit/
+    TestCase.php
 ```
+
+Kode produksi hanya di `app/`, `routes/`, `config/`, `database/`, dan `bootstrap/`. Kode test hanya di `tests/`. Kode produksi tidak ditulis di `tests/`, dan kode test tidak ditulis di `app/`.
 
 ### Client React
 
