@@ -27,6 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
         $middleware->append(RequestIdMiddleware::class);
+
+        // The default guest redirect resolves `route('login')`, which does not
+        // exist in this API-only application. Resolving it throws inside the
+        // auth middleware — before the exception handler can render an
+        // envelope — so an unauthenticated request without an `Accept:
+        // application/json` header would answer 500 instead of 401.
+        $middleware->redirectGuestsTo(fn (Request $request) => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {

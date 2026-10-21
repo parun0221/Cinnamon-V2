@@ -44,6 +44,19 @@ class ErrorEnvelopeTest extends TestCase
         $this->assertStringNotContainsString('vendor/laravel', $message);
     }
 
+    public function test_unauthenticated_request_without_accept_header_still_returns_401(): void
+    {
+        // Without `Accept: application/json` the request does not "expect JSON",
+        // so the auth middleware would try to redirect a guest to `route('login')`.
+        // That route does not exist in this API-only app, and resolving it throws
+        // inside the middleware — before the envelope can be rendered.
+        $response = $this->get('/api/v1/me');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('error.code', 'UNAUTHENTICATED')
+            ->assertJsonStructure(['error' => ['code', 'message', 'fields', 'details'], 'meta' => ['request_id']]);
+    }
+
     public function test_request_id_is_unique_per_request(): void
     {
         $first = $this->getJson('/api/v1/tidak-ada')->json('meta.request_id');
