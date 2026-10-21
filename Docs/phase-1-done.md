@@ -14,10 +14,11 @@ Status: **complete** (verified 2026-10-21).
 
 - **Profil** punya form "Ganti password" kedua: tiga input password, pesan error server menempel pada field yang salah, nilai yang diketik tidak hilang saat gagal, tombol nonaktif saat request berjalan.
 - **Sidebar** menampilkan tujuh grup modul (Dashboard, Master Data, Penerimaan, Penjualan, Inventori, Laporan, Administrasi). Modul yang halamannya belum ada tetap tampil sebagai tautan dan membuka halaman 404 berbahasa Indonesia dengan tombol "Kembali ke Dashboard".
-- **Karyawan** tidak melihat entri "Pengguna", dan mengetik `/admin/users` memberi halaman "Akses tidak diizinkan", bukan daftar user.
-- **Halaman Pengguna** (Admin) menampilkan nama, email, peran, dan status tiap akun, dengan kendali ubah peran dan aktif/nonaktifkan. Menonaktifkan akun langsung kehilangan aksesnya.
-- **Menu mobile** di bawah 720px: sidebar tertutup dan dibuka lewat tombol "Menu" yang memperbarui `aria-expanded`.
+- **Karyawan** hanya melihat modul yang boleh dipakai — Dashboard, Supplier, Penerimaan, dan Profil. Modul khusus Admin (Master Data, Penjualan, Inventori, Laporan, Pengguna) tidak muncul, dan mengetik `/admin/users` memberi halaman "Akses tidak diizinkan", bukan daftar user.
+- **Halaman Pengguna** (Admin) menampilkan nama, email, peran, dan status tiap akun, dengan kendali ubah peran dan aktif/nonaktifkan. Menonaktifkan akun langsung kehilangan aksesnya. Baris admin sendiri tidak bisa diubah.
+- **Menu mobile** di bawah 720px: sidebar tertutup dan dibuka lewat tombol "Menu" yang memperbarui `aria-expanded`. Sidebar jadi drawer di atas konten, jadi tombolnya tetap terjangkau.
 - **Akun yang dinonaktifkan** kehilangan akses seketika, termasuk session yang sedang berjalan — sebelumnya hanya login berikutnya yang tertolak.
+- **Session yang kedaluwarsa** mengembalikan pengguna ke halaman login, bukan membiarkan mereka menebak-nebak di shell yang tampak login.
 
 ## Verifikasi yang dijalankan
 
@@ -52,7 +53,13 @@ Tidak ada file test baru — suite yang ada dipakai sebagai jaring regresi.
 | I | Karyawan `GET /users/{id}` | 403 `FORBIDDEN` | `curl` |
 | J | `GET /users/{uuid tidak ada}` | 404 `NOT_FOUND` | `curl` |
 | K | `PATCH role:"admin"` | 200, `data.role` = "admin" | `curl` |
-| L | Admin menonaktifkan dirinya sendiri | 422, `fields.is_active` = "Akun sendiri tidak dapat dinonaktifkan." | `curl` |
+| L | Admin menonaktifkan dirinya sendiri (`is_active: false`) | 422, "Admin terakhir harus tetap aktif dan berperan Admin." | `curl` |
+| L2 | Admin menonaktifkan dirinya sendiri (`is_active: "0"` / `0`) | 422 — nilai boolean dinormalisasi, tidak lolos | `curl` |
+| L3 | Admin menurunkan perannya sendiri | 422 — admin terakhir tidak boleh dihapus dari sistem | `curl` |
+| L4 | Admin menonaktifkan atau menurunkan peran **user lain** | 200 — guard tidak memblokir pengelolaan akun lain | `curl` |
+| M | `POST /users` dengan password berstring bcrypt | 201, hash tersimpan dengan cost 12 (di-hash ulang, bukan verbatim) | `curl` |
+| M2 | Login dengan string bcrypt itu | 200 — login dengan yang diketik, bukan dengan plaintext hash | `curl` |
+| M3 | `POST /users` dengan hash bcrypt cost 13 | 201, bukan 500 | `curl` |
 
 ### Browser — navigasi, 404, dan form (headless Chrome lewat CDP)
 
@@ -62,7 +69,7 @@ Tidak ada file test baru — suite yang ada dipakai sebagai jaring regresi.
 | B | Sidebar Admin | Memuat tautan "Pengguna" | Chrome headless |
 | C | Admin membuka `/admin/users` | 2 baris seed tampil | Chrome headless |
 | D | Admin mengubah peran | Perubahan bertahan setelah refresh | Chrome headless |
-| E | Karyawan membuka `/` | Modul "Pengguna" tidak tampil | Chrome headless |
+| E | Karyawan membuka `/` | Hanya Dashboard, Supplier, Penerimaan (3), dan Profil yang tampil; tidak ada modul khusus Admin | Chrome headless |
 | E2 | Karyawan | "Profil" tetap terjangkau (dibutuhkan untuk ganti password) | Chrome headless |
 | F | Karyawan mengetik `/admin/users` | Halaman "Akses tidak diizinkan", tanpa tabel | Chrome headless |
 | G | `/halaman-ngawur` | 404 Indonesia + tombol "Kembali ke Dashboard" → `/` | Chrome headless |
@@ -74,8 +81,9 @@ Tidak ada file test baru — suite yang ada dipakai sebagai jaring regresi.
 | L | Login dengan password lama | Ditolak, "Email atau password salah." | Chrome headless |
 | M | Password demo dikembalikan | "Password berhasil diganti." | Chrome headless |
 | N | Jendela 480px | Tombol menu tampil, sidebar tertutup | Chrome headless |
-| O | Klik tombol menu | Sidebar terbuka, `aria-expanded="true"` | Chrome headless |
+| O | Klik tombol menu | Sidebar terbuka sebagai drawer, `aria-expanded="true"`, tombol menu tetap di layar | Chrome headless |
 | P | Console browser | 0 error, 0 warning, 0 exception | Chrome headless |
+| Q | Session dihapus di server | Pengguna dikembalikan ke `/login`, bukan menebak-nebak di shell | Chrome headless |
 
 ### Pemeriksaan statis dan jaring regresi
 
@@ -111,13 +119,45 @@ Tidak ada file test baru — suite yang ada dipakai sebagai jaring regresi.
    memfilter `is_active` pada `retrieveById` dan `retrieveByToken`.
 3. **Menu "Pengguna" disembunyikan dari Karyawan, bukan seluruh grup
    "Administrasi".** `Docs/Design.md` §3 menempatkan Profil di dalam grup
-   Administrasi, dan Karyawan butuh Profil untuk mengganti password.
+   Administrasi, dan Karyawan butuh Profil untuk mengganti password. Catatan:
+   review akhir-branch menemukan bahwa modul lain (Master Data, Penjualan,
+   Inventori, Laporan) juga harus disembunyikan dari Karyawan sesuai
+   `Docs/PRD.md` — lihat tabel di bawah.
 4. **Tombol menu mobile sempat tidak pernah tampil.** Aturan `display: none`
    ada tanpa media query yang menampilkannya, jadi sidebar tidak punya cara
    terbuka di layar sempit.
 5. **Prettier memakai `endOfLine: "auto"`.** Nilai bawaan `lf` menulis ulang
    seluruh file ber-`CRLF` dan menghasilkan diff ratusan baris pada file yang
    tidak disentuh.
+
+## Perbaikan dari review akhir-branch
+
+Review seluruh branch oleh reviewer terpisah menemukan delapan cacat. Yang
+Critical dan Important sudah diperbaiki dan diverifikasi ulang; sisanya
+dicatat di bawah sebagai belum dikerjakan.
+
+| # | Cacat | Perbaikan | Bukti |
+|---|---|---|---|
+| 1 | Guard "tidak bisa menonaktifkan akun sendiri" membandingkan `=== false`, tetapi rule `boolean` Laravel tidak menormalisasi nilai — `"0"` lolos sebagai string. Admin bisa menonaktifkan dirinya sendiri. | Nilai `is_active` dinormalisasi di `UpdateUserRequest`; guard sekarang berlaku untuk admin terakhir yang aktif, apa pun perannya. | `is_active: "0"` dan `is_active: 0` → 422, admin tetap aktif |
+| 2 | Admin terakhir bisa menurunkan perannya sendiri, meninggalkan sistem tanpa admin dan tanpa jalan kembali lewat UI. | Guard admin terakhir, di server dan di UI (pilihan peran baris sendiri dinonaktifkan). | `PATCH role: "karyawan"` pada diri sendiri → 422, admin aktif tetap 1 |
+| 3 | Cast `hashed` hanya menghash nilai yang belum berbentuk hash, sehingga password berbentuk string bcrypt disimpan apa adanya. | Password di-hash eksplisit dengan `Hash::make()` di kedua tempat. | User dengan password berstring bcrypt login dengan string itu (200), bukan dengan plaintext hash tersebut (401) |
+| 4 | Hash bcrypt dengan cost di atas `BCRYPT_ROUNDS` membuat cast melempar exception — 500 untuk input pengguna. | Hashing eksplisit, tidak melalui cast. | `POST /users` dengan hash cost-13 → 201, bukan 500 |
+| 5 | Sidebar menampilkan semua modul ke semua role. | Modul khusus Admin ditandai `adminOnly` sesuai `Docs/PRD.md`. | Karyawan melihat hanya Dashboard, Supplier, Penerimaan (3), Profil |
+| 6 | Di layar sempit sidebar menjadi blok di alur normal, sehingga tombol menu terdorong keluar layar. | Sidebar menjadi drawer `position: fixed`. | Tombol menu tetap di `top: 12` saat sidebar terbuka |
+| 7 | Session yang kedaluwarsa meninggalkan pengguna di shell yang tampak login; tidak ada jalan ke halaman login. | Response interceptor menghapus session lokal saat server melaporkan session habis. | Setelah session dihapus di server, halaman redirected ke `/login` |
+| 8 | `isSessionExpired()` di `errors.ts` tidak dipakai kode produksi mana pun. | Dipakai oleh interceptor di `client.ts`. | — |
+
+Minor yang **belum** diperbaiki, dengan alasannya:
+
+- **`per_page`/`page` tetap di-clamp, bukan ditolak.** Ini pilihan yang sudah
+  dicatat di bagian "Belum dikerjakan" di bawah; `INVALID_FILTER` belum
+  diimplementasikan sama sekali, termasuk di daftar `API_ERROR_CODES` frontend.
+- **Karyawan bisa membedakan 403 dari 404 untuk menebak apakah sebuah UUID
+  ada.** Route model binding menyelesaikan user sebelum policy consulted, jadi
+  UUID yang tidak ada menjawab 404 dan yang ada menjawab 403. Dampaknya kecil
+  karena UUID v7 tidak bisa ditebak, tapi inkonsistensinya nyata.
+- **Halaman pengguna belum punya form tambah akun.** Endpoint `POST /users`
+  sudah ada dan terverifikasi, tapi belum ada form-nya di UI.
 
 ## Belum dikerjakan
 
