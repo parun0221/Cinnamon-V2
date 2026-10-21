@@ -38,7 +38,7 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **36 passed (168 assertions)**:
+Backend (`cd backend && php artisan test`) — **37 passed (177 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
@@ -52,7 +52,8 @@ Backend (`cd backend && php artisan test`) — **36 passed (168 assertions)**:
   on success and error, no stack trace in errors.
 - `TimestampTest` — timestamps carry the `+07:00` offset.
 - `ErrorEnvelopeTest` — envelope shape on validation/unauthenticated/404, no stack trace in
-  the message, `request_id` unique per request.
+  the message, `request_id` unique per request, and a guest request that sends no
+  `Accept: application/json` header still answers 401.
 - `LoginRateLimitTest` — six failed logins for one email return 429 `RATE_LIMITED`; a
   correct login within the limit still succeeds.
 - `remember` — a login with `"remember": true` sets the long-lived `remember_web_*` cookie;
@@ -89,6 +90,7 @@ Vite proxy:
 | `POST /api/v1/auth/logout` then `GET /api/v1/me` | 200 then 401 `UNAUTHENTICATED` |
 | CSRF token mismatch | 419 `UNAUTHENTICATED` |
 | Login from a non-stateful origin | 403 `FORBIDDEN` (was a 500 before the fix) |
+| Guest request without an `Accept` header | 401 `UNAUTHENTICATED` (was a 500 before the fix) |
 | Six failed logins for one email | 429 `RATE_LIMITED` after five attempts |
 | Secrets scan of `frontend/src` and `frontend/public` | 0 matches |
 
