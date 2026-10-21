@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
@@ -88,5 +89,18 @@ class AuthController extends Controller
         $user->fill($validated)->save();
 
         return ApiResponse::success(new UserResource($user->refresh()));
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // The 'hashed' cast on the model hashes the value as it is filled, so
+        // Hash::make() here would only add a second way to get the same result.
+        $user->forceFill([
+            'password' => $request->validated()['password'],
+        ])->save();
+
+        return ApiResponse::success(null);
     }
 }

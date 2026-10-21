@@ -18,6 +18,7 @@ return [
     'array' => ':attribute harus berupa larik.',
     'boolean' => ':attribute harus bernilai ya atau tidak.',
     'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+    'current_password' => 'Password saat ini salah.',
     'date' => ':attribute bukan tanggal yang valid.',
     'different' => ':attribute dan :other harus berbeda.',
     'digits' => ':attribute harus terdiri dari :digits digit.',
@@ -83,6 +84,8 @@ return [
     'attributes' => [
         'email' => 'email',
         'password' => 'password',
+        'current_password' => 'password saat ini',
+        'password_confirmation' => 'konfirmasi password',
         'name' => 'nama',
         'remember' => 'ingat saya',
     ],

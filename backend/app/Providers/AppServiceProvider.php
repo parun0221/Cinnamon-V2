@@ -2,8 +2,11 @@
 
 namespace App\Providers;
 
+use App\Auth\ActiveUserProvider;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -16,7 +19,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // A deactivated account must lose the access it already holds, not
+        // just the ability to log in again.
+        Auth::provider('active', fn ($app, array $config) => new ActiveUserProvider(
+            $app['hash'],
+            $config['model'] ?? User::class,
+        ));
     }
 
     /**

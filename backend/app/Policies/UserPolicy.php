@@ -11,6 +11,11 @@ class UserPolicy
         return $actor->hasRole('admin');
     }
 
+    public function create(User $actor): bool
+    {
+        return $actor->hasRole('admin');
+    }
+
     public function view(User $actor, User $user): bool
     {
         return $actor->hasRole('admin');
