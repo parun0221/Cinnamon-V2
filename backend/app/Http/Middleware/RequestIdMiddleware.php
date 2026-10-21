@@ -14,7 +14,6 @@ class RequestIdMiddleware
     {
         $requestId = $request->headers->get('X-Request-Id') ?: RequestId::generate();
 
-        RequestId::set($requestId);
         $request->attributes->set(RequestId::ATTRIBUTE, $requestId);
 
         Log::withContext(['request_id' => $requestId]);
