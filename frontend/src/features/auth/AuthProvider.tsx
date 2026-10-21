@@ -28,7 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: logoutRequest,
-    onSuccess: () => {
+    onSettled: () => {
+      // The local session is dropped even if the server call fails (e.g. a
+      // stale CSRF token returns 419). Leaving the user "logged in" after they
+      // pressed "Keluar" would be worse than an orphan server session.
       queryClient.setQueryData<User | null>(ME_QUERY_KEY, null)
     },
   })
@@ -47,7 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const logout = useCallback(async () => {
-    await logoutMutation.mutateAsync()
+    try {
+      await logoutMutation.mutateAsync()
+    } catch {
+      // The server call failed, but the local session is already cleared by the
+      // mutation's onSettled handler.
+    }
   }, [logoutMutation])
 
   const refresh = useCallback(async () => {
