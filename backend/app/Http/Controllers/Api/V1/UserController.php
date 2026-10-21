@@ -11,6 +11,7 @@ use App\Support\ApiResponse;
 use App\Support\RequestId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -40,11 +41,15 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        // The password is filled as-is because it is in the model's $fillable,
-        // and the 'hashed' cast hashes it on the way in. Hash::make() here
-        // would only add a second way to reach the same result.
+        // The password is hashed here rather than left to the model's
+        // 'hashed' cast. The cast only hashes a value that is not already a
+        // hash, so a password which happens to look like a bcrypt string
+        // would be stored verbatim — letting anyone who knows a well-known
+        // hash plant a password of their choosing, and making a high-cost
+        // hash throw instead of validate.
         $user = User::query()->create([
             ...$validated,
+            'password' => Hash::make($validated['password']),
             'is_active' => true,
         ]);
 
@@ -64,17 +69,18 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        // Deactivating your own account locks the last admin out of the
-        // system with no way back in through the UI.
-        if (
-            array_key_exists('is_active', $validated)
-            && $validated['is_active'] === false
-            && $user->is($request->user())
-        ) {
+        // Demoting or deactivating an account takes away the access it
+        // currently holds. Doing that to the last active admin locks every
+        // admin out of the system with no way back in through the UI, so the
+        // last one standing cannot be removed.
+        if ($this->removesTheLastAdmin($validated, $user)) {
             return ApiResponse::error(
                 'VALIDATION_ERROR',
-                'Anda tidak dapat menonaktifkan akun Anda sendiri.',
-                ['is_active' => ['Akun sendiri tidak dapat dinonaktifkan.']],
+                'Admin terakhir tidak dapat dinonaktifkan atau diturunkan perannya.',
+                [
+                    'is_active' => ['Admin terakhir harus tetap aktif dan berperan Admin.'],
+                    'role' => ['Admin terakhir harus tetap aktif dan berperan Admin.'],
+                ],
                 [],
                 422,
             );
@@ -83,5 +89,26 @@ class UserController extends Controller
         $user->fill($validated)->save();
 
         return ApiResponse::success(new UserResource($user->refresh()));
+    }
+
+    /**
+     * Whether this change would leave the system without an active admin.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function removesTheLastAdmin(array $validated, User $user): bool
+    {
+        $staysAdmin = ($validated['role'] ?? $user->role) === 'admin';
+        $staysActive = $validated['is_active'] ?? $user->is_active;
+
+        if ($staysAdmin && $staysActive) {
+            return false;
+        }
+
+        return ! User::query()
+            ->where('role', 'admin')
+            ->where('is_active', true)
+            ->whereKeyNot($user->getKey())
+            ->exists();
     }
 }

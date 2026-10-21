@@ -33,4 +33,19 @@ class UpdateUserRequest extends FormRequest
             'is_active' => ['sometimes', 'required', 'boolean'],
         ];
     }
+
+    /**
+     * Normalise `is_active` to a real boolean.
+     *
+     * Laravel's `boolean` rule accepts true, false, 1, 0, "1", and "0", but
+     * it does not convert them: `validated()` hands back the string "0" for a
+     * request that sent "0". A guard written as `=== false` would then miss
+     * the very value it exists to catch.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('is_active') && in_array($this->input('is_active'), [true, false, 1, 0, '1', '0'], true)) {
+            $this->merge(['is_active' => (bool) $this->input('is_active')]);
+        }
+    }
 }

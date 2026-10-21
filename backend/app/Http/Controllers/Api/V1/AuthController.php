@@ -95,10 +95,12 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        // The 'hashed' cast on the model hashes the value as it is filled, so
-        // Hash::make() here would only add a second way to get the same result.
+        // Hashed here rather than left to the model's 'hashed' cast: the cast
+        // only hashes a value that is not already a hash, so a password which
+        // happens to look like a bcrypt string would be stored verbatim and
+        // the user would be locked out of their own account.
         $user->forceFill([
-            'password' => $request->validated()['password'],
+            'password' => Hash::make($request->validated()['password']),
         ])->save();
 
         return ApiResponse::success(null);
