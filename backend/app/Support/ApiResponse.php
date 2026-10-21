@@ -21,13 +21,16 @@ class ApiResponse
 
     /**
      * Error response envelope: { error: { code, message, fields, details }, meta: { request_id } }.
+     *
+     * The status defaults to 422 because most explicit errors carry field-level
+     * validation failures. Pass a status when the code implies a different one.
      */
     public static function error(
         string $code,
         string $message,
         array $fields = [],
         array $details = [],
-        int $status = 400,
+        int $status = 422,
     ): JsonResponse {
         return response()->json([
             'error' => [
