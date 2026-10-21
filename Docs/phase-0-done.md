@@ -38,13 +38,14 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **31 passed (138 assertions)**:
+Backend (`cd backend && php artisan test`) — **32 passed (148 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
 - `AuthorizationTest` — Karyawan gets 403 on `GET /api/v1/users`; Admin lists users;
   guest gets 401 (not 403).
-- `AuthEdgeCaseTest` — CSRF mismatch renders 419; inactive login creates no session row;
+- `AuthEdgeCaseTest` — CSRF mismatch renders 419; login from a non-stateful origin is
+  refused with 403 instead of 500; inactive login creates no session row;
   `X-Request-Id` header matches `meta.request_id`; error bodies leak no internals; UUID v7
   resolves by route binding.
 - `HealthTest` — health envelope, UUID v7 primary key, 404 envelope, `request_id` present
@@ -80,6 +81,7 @@ Vite proxy:
 | `GET /api/v1/users` as Karyawan | 403 `FORBIDDEN` |
 | `POST /api/v1/auth/logout` then `GET /api/v1/me` | 200 then 401 `UNAUTHENTICATED` |
 | CSRF token mismatch | 419 `UNAUTHENTICATED` |
+| Login from a non-stateful origin | 403 `FORBIDDEN` (was a 500 before the fix) |
 | Secrets scan of `frontend/src` and `frontend/public` | 0 matches |
 
 Browser check (headless Chrome against the Vite dev server):
