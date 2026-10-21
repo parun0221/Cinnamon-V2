@@ -841,6 +841,49 @@ cd /d/DEV/0.AI/Cinnamon2 && git add Docs && git commit -m "docs: record the phas
 
 ---
 
+## Rulings During Execution
+
+Catatan ini ditulis setelah plan dieksekusi. Plan adalah argumen dari spec;
+catatan di bawah adalah tempat di mana spec dan plan berbeda, atau di mana
+plan tidak menentukan, dan yang harus berubah.
+
+1. **Task 1 — `client.ts` memakai prefix yang salah.** Potongan kode di plan
+   memanggil `apiClient.post('/me/password', …)`, sedangkan setiap fungsi lain
+   memakai `/api/v1/…`. Diganti menjadi `/api/v1/me/password`.
+2. **Task 1 — `current_password` belum punya pesan Bahasa Indonesia.**
+   `lang/id/validation.php` tidak punya baris untuk rule itu, sehingga skenario
+   A akan menjawab dalam bahasa Inggris, melanggar harapan tabel acceptance.
+   Ditambahkan baris rule dan nama atribut `current_password` /
+   `password_confirmation`.
+3. **Task 1 — form ganti password memakai state sendiri.** Plan meminta memakai
+   state `status`/`error` yang sudah ada; state bersama akan menampilkan error
+   password di atas form nama.
+4. **Task 2 — Menonaktifkan akun harus mengakhiri akses yang sedang berjalan.**
+   Skenario H mengharapkan 401, tetapi provider bawaan Laravel mencari user
+   dari session berdasarkan id saja, tanpa filter `is_active`, sehingga akun
+   yang dinonaktifkan tetap bisa memakai session lama. Ditambahkan
+   `App\Auth\ActiveUserProvider`, yang memfilter `is_active` pada
+   `retrieveById` dan `retrieveByToken`. Jalur `retrieveByToken` di luar tabel
+   acceptance juga diperiksa live: cookie remember milik user yang dinonaktifkan
+   menjawab 401.
+5. **Task 3 — Yang disembunyikan dari Karyawan adalah entri, bukan grup.**
+   Skenario B mengharapkan grup "Administrasi" hilang, tetapi `Docs/Design.md`
+   §3 menempatkan Profil di dalam grup itu dan Karyawan butuh Profil untuk
+   mencapai form ganti password. Modul "Pengguna" yang disembunyikan; grupnya
+   tetap ada.
+6. **Task 3 — Tombol menu mobile tidak pernah tampil.** Aturan `display: none`
+   pada tombol tidak punya media query yang menampilkannya, sehingga sidebar
+   tidak punya cara terbuka di layar sempit. Ditambahkan media query.
+7. **Task 3 — Pemeriksaan console error dipersempit.** Chrome mencatat setiap
+   respons non-2xx sebagai error konsol, termasuk 401/403/422 yang memang
+   ditangani aplikasi. Yang diperiksa adalah error selain status yang
+   ditangani, warning React, dan exception yang tidak tertangani.
+8. **Task 4 — Prettier memakai `endOfLine: "auto"`.** Nilai bawaan `lf`
+   menulis ulang seluruh file ber-`CRLF` dan menghasilkan diff ratusan baris
+   pada file yang tidak disentuh task ini.
+
+---
+
 ## Self-Review Checklist
 
 1. **Spec coverage:**
