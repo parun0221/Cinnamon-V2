@@ -82,6 +82,16 @@ Vite proxy:
 | CSRF token mismatch | 419 `UNAUTHENTICATED` |
 | Secrets scan of `frontend/src` and `frontend/public` | 0 matches |
 
+Browser check (headless Chrome against the Vite dev server):
+
+| Step | Observed |
+|---|---|
+| Load `/login` | title `CINNAMON`, `lang="id"`, heading "Masuk", labelled Email and Password fields |
+| Guest probe | `GET /api/v1/me` → 401 (expected — no session yet) |
+| Submit credentials | `POST /api/v1/auth/login` → 200, redirected to `/` |
+| Dashboard | sidebar brand `CINNAMON`, topbar shows "Admin" / role "Admin", content heading "Dashboard" |
+| Click "Keluar" | `POST /api/v1/auth/logout` → 200, redirected back to `/login` |
+
 ## How to run locally
 
 ```bash
