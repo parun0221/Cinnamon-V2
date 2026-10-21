@@ -38,7 +38,7 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **34 passed (164 assertions)**:
+Backend (`cd backend && php artisan test`) — **36 passed (168 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
@@ -55,6 +55,8 @@ Backend (`cd backend && php artisan test`) — **34 passed (164 assertions)**:
   the message, `request_id` unique per request.
 - `LoginRateLimitTest` — six failed logins for one email return 429 `RATE_LIMITED`; a
   correct login within the limit still succeeds.
+- `remember` — a login with `"remember": true` sets the long-lived `remember_web_*` cookie;
+  without it, no remember cookie is issued.
 
 Frontend (`cd frontend && npm test`) — **19 passed**:
 

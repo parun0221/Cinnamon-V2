@@ -93,6 +93,35 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_remember_me_sets_a_long_lived_remember_cookie(): void
+    {
+        $user = User::factory()->admin()->create();
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'remember' => true,
+        ], $this->frontendHeaders);
+
+        $response->assertOk();
+
+        $this->assertNotEmpty($response->getCookie(Auth::guard('web')->getRecallerName()));
+    }
+
+    public function test_login_without_remember_sets_no_remember_cookie(): void
+    {
+        $user = User::factory()->admin()->create();
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ], $this->frontendHeaders);
+
+        $response->assertOk();
+
+        $this->assertNull($response->getCookie(Auth::guard('web')->getRecallerName()));
+    }
+
     public function test_login_requires_email_and_password(): void
     {
         $response = $this->postJson('/api/v1/auth/login', [], $this->frontendHeaders);
