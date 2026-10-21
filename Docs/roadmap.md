@@ -52,7 +52,7 @@ Rekomendasi urutan: backend dahulu untuk aturan data dan API dalam setiap fitur,
 - Siapkan role Admin/Karyawan, login, logout, profile/current user, policy awal, dan demo seeder sintetis.
 - Tetapkan API response/error envelope, request id, health endpoint, dan normalisasi error.
 - Siapkan React router, API client, auth provider, protected routes, app shell, token Design.md, dan layar login.
-- Siapkan lint, formatter, test runner, build, serta instruksi menjalankan kedua aplikasi.
+- Siapkan lint, formatter, build, serta instruksi menjalankan kedua aplikasi. Test runner sudah terpasang dari Phase 0 dan dipakai sebagai jaring regresi, tanpa menambah file test baru.
 
 **Selesai jika:** instalasi bersih dapat migrate dan seed; health endpoint merespons; Admin/Karyawan dapat login dan memanggil profile; route dan API menolak akses yang tidak berhak; React menampilkan loading/error dengan benar; tidak ada secret di frontend atau repository.
 
@@ -146,7 +146,7 @@ Rekomendasi urutan: backend dahulu untuk aturan data dan API dalam setiap fitur,
 
 **Ruang lingkup:**
 
-- Unit, feature, authorization, integration, rollback, retry, concurrency, dan React behavior tests.
+- Verifikasi end-to-end terhadap aplikasi yang jalan untuk seluruh fitur dan role: integration, authorization, rollback, retry, concurrency, dan React behavior.
 - Fresh migration, seed sintetis, clean-install check, lint/formatter/type check, dan production build.
 - Review keamanan session/CSRF/CORS, policy, rate limit, validasi file, secret handling, error logging, dan audit.
 - Visual/accessibility review untuk keyboard, focus, kontras, ukuran layar, tabel, form, dan konfirmasi aksi.

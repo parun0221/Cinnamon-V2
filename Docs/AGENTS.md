@@ -129,17 +129,19 @@ Gunakan batas tanggung jawab sesuai kebutuhan nyata:
 
 ## 8. Pemeriksaan dan definition of done
 
+**Tidak ada file test baru.** Suite yang ada (47 test backend, 22 test frontend) tetap jalan sebagai jaring regresi, tapi tidak diperluas. Fitur baru diverifikasi dengan menjalankan aplikasinya, bukan dengan menulis test — lihat `Docs/decisions.md` §10.
+
 Untuk perubahan backend, pilih pemeriksaan yang relevan:
 
-- Unit test untuk aturan domain seperti FIFO, HPP, profit, quantity, dan status.
-- Feature test untuk validasi, autentikasi, policy, endpoint, dan response.
-- Transaction/concurrency test untuk stok tidak cukup, retry, duplicate posting, rollback, dan locking.
-- Migration fresh/rollback pada database pengujian yang terpisah (satu-satunya pemeriksaan yang memakai database terpisah — test biasa jalan di database dev dengan `DatabaseTransactions`).
+- Verifikasi live terhadap server yang benar-benar jalan: jalankan `php artisan serve`, lalu panggil endpoint dengan `curl` memakai session cookie yang sama. Periksa status, envelope, dan `meta.request_id`.
+- Verifikasi aturan domain lewat kasus nyata pada data dev: FIFO, HPP, profit, quantity, dan status dijalankan pada data sebenarnya dan hasilnya dibaca.
+- Verifikasi transaksi dan konkurensi: stok tidak cukup, retry, duplicate posting, rollback, dan locking dicoba pada database dev dan dampaknya diamati.
+- Jalankan suite yang ada (`php artisan test`) sebagai jaring regresi sebelum commit — jalankan, jangan diperluas.
+- Migration fresh/rollback pada database pengujian yang terpisah.
 
 Untuk perubahan frontend:
 
-- Test perilaku form dan alur pengguna.
-- Cakup permission visibility serta loading, empty, validation, conflict, network, dan success states.
+- Verifikasi di browser: buka halamannya, jalankan alurnya, dan amati hasilnya. Form, navigasi, permission visibility, serta state loading, empty, validation, conflict, network, dan success dicek pada aplikasi yang sedang jalan.
 - Jalankan lint/type check dan production build.
 
 Sebelum menyatakan task selesai:

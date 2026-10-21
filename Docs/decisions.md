@@ -85,6 +85,18 @@ All six decisions below were confirmed before any migration or API change. Refer
 
 **Affected:** `Docs/AGENTS.md` §5 and §8, `Docs/Architecture.md` §7, `Docs/plans/2026-10-21-phase-1-foundation-and-auth.md` Global Constraints and Tasks 3, 4, 6, 7, 8, 9, 12, 13.
 
+## 10. No new test files — verify against the running app
+
+**Decision:** no new test file is written from Phase 1 onward. The existing test suite (47 backend tests, 22 frontend tests) is kept and still runs, but new features are verified by exercising the running application — the API directly and the browser — instead of by authoring new test files.
+
+**Why:** the test suite already covers the Phase 0 surface. Adding a test file per feature costs more tokens and time than it returns on this project, and the checks that matter for a person using the software are end-to-end ones: does the screen work, does the endpoint return the right envelope, is the wrong role actually refused.
+
+**How verification works instead:** every phase ends with a live acceptance pass — the real server on the real database, driven by `curl` for API contracts and by a browser for UI behaviour. The existing suite still runs as a regression net before commit; it is simply never extended.
+
+**Consequence:** the TDD cycle in the phase plans changes shape. A task states the behaviour it must deliver, builds it, then proves it by driving the running app. The "write a failing test first" step is replaced by "write the acceptance check first" — the same discipline, against the real thing rather than a test double.
+
+**Affected:** `Docs/AGENTS.md` §8, `Docs/PRD.md` §8 and §12, `Docs/Architecture.md` §14, `Docs/roadmap.md` Phase 4, `Docs/plans/2026-10-21-phase-1-foundation-and-auth.md` (all tasks).
+
 ---
 
 **Open / blocked decisions:** none. All six roadmap open items are resolved here.

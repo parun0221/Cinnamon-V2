@@ -260,13 +260,15 @@ MVP tidak membutuhkan layanan eksternal. Local storage cukup untuk gambar produk
 
 AI bukan bagian dari core inventory. Jika kelak dipakai untuk ringkasan laporan atau pencarian, AI hanya boleh membaca data yang telah diotorisasi; AI tidak boleh mem-posting transaksi, mengubah stok, atau mengubah permission.
 
-## 14. Strategi testing
+## 14. Strategi verifikasi
 
-1. Unit test untuk FIFO, HPP, profit, quantity, dan transisi status.
-2. Feature test untuk login, policy, validasi, approval receipt, posting sale, koreksi, dan laporan.
-3. Transaction test untuk stok tidak cukup, duplicate posting, rollback, dan perubahan stok bersamaan.
-4. React test untuk form, loading/empty/error state, visibility berbasis permission, dan journey utama.
-5. Build dan lint check pada CI.
+Tidak ada file test baru yang ditulis (lihat `Docs/decisions.md` §10). Suite yang ada tetap berjalan sebagai jaring regresi, tapi fitur baru diverifikasi dengan menjalankan aplikasinya:
+
+1. Aturan domain FIFO, HPP, profit, quantity, dan transisi status dijalankan pada data dev dan hasilnya dibaca.
+2. Endpoint login, policy, validasi, approval receipt, posting sale, koreksi, dan laporan dipanggil langsung terhadap server yang jalan, memakai session cookie yang sama.
+3. Transaksi dicek pada kasus nyata: stok tidak cukup, duplicate posting, rollback, dan perubahan stok bersamaan.
+4. Halaman React dibuka di browser dan alurnya dijalankan; form, loading/empty/error state, visibility berbasis permission, dan journey utama diamati.
+5. Suite yang ada, build, dan lint check tetap jalan sebagai jaring regresi sebelum commit.
 
 ## 15. Strategi deployment
 

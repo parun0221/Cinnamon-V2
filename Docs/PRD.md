@@ -77,7 +77,7 @@ The system does not introduce Manager, Cashier, Warehouse, or Accountant roles i
 3. Preserve batch-level cost so HPP and gross profit remain historically stable.
 4. Provide searchable history and reports for the store operator.
 5. Enforce Admin/Karyawan authorization on the server.
-6. Build a maintainable Laravel API and React TypeScript client with tests.
+6. Build a maintainable Laravel API and React TypeScript client, verified against the running application.
 
 ### Non-goals for MVP
 
@@ -208,7 +208,7 @@ Admin filters incoming, outgoing, stock, movement, HPP, and profit reports by da
 - List screens paginate and avoid N+1 queries.
 - Errors expose a stable code and request id but never secrets or stack traces in production.
 - The project can be installed from a clean database using documented migrations and seeders.
-- CI runs formatting, tests, and frontend build before merge.
+- CI runs formatting, the existing test suite, and frontend build before merge.
 
 ## 11. Loading, empty, error, and confirmation states
 
@@ -255,7 +255,7 @@ Implement sales, FIFO allocations, HPP, gross profit, simple ledger, dashboards,
 
 ### Phase 4 - hardening and release
 
-Add feature tests, authorization tests, concurrency/rollback tests, exports, security review, backup notes, and deployment.
+Add live end-to-end verification of every feature and role, concurrency/rollback checks, exports, security review, backup notes, and deployment.
 
 ### Phase 5 - optional mobile
 
@@ -276,6 +276,6 @@ Design Flutter only for workflows that benefit from camera scanning or warehouse
 
 - Treat this document as the product boundary; do not add features because they are common in other systems.
 - Explain the concept and acceptance criteria before generating implementation code.
-- Work in small vertical slices: migration, request, policy, action, endpoint, UI, and test.
+- Work in small vertical slices: migration, request, policy, action, endpoint, UI, then verify the slice against the running application.
 - Never change stock rules, role permissions, or API contracts silently.
 - When a decision is not in this document, mark it as an assumption and request confirmation before it affects data or workflows.
