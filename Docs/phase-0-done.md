@@ -38,7 +38,7 @@ execution ledger; the ones that change what a user sees are:
 
 ## Verification actually run
 
-Backend (`cd backend && php artisan test`) — **26 passed (112 assertions)**:
+Backend (`cd backend && php artisan test`) — **31 passed (138 assertions)**:
 
 - `AuthenticationTest` — login, wrong password, unknown email, inactive user, missing
   fields, Indonesian validation messages, `/me`, logout, profile update.
@@ -50,14 +50,18 @@ Backend (`cd backend && php artisan test`) — **26 passed (112 assertions)**:
 - `HealthTest` — health envelope, UUID v7 primary key, 404 envelope, `request_id` present
   on success and error, no stack trace in errors.
 - `TimestampTest` — timestamps carry the `+07:00` offset.
+- `ErrorEnvelopeTest` — envelope shape on validation/unauthenticated/404, no stack trace in
+  the message, `request_id` unique per request.
 
-Frontend (`cd frontend && npm test`) — **17 passed**:
+Frontend (`cd frontend && npm test`) — **19 passed**:
 
 - `number.test.ts` — money and quantity formatting.
 - `client.test.ts` — 419 → "sesi berakhir", server error envelope parsing, network failure.
 - `LoginPage.test.tsx` — labelled fields, redirect on success, server error shown, network
   error shown, input preserved after error.
 - `AuthGuard.test.tsx` — guest redirected to login, authenticated user reaches the route.
+- `AuthProvider.test.tsx` — the local session is cleared on logout, both when the server
+  call succeeds and when it fails with a stale CSRF token.
 
 Static checks: `npx tsc -b` clean, `npm run lint` clean, `npm run build` produces `dist/`.
 
