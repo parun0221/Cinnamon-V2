@@ -37,6 +37,8 @@
 > 8. Backend test memakai `cinnamon_v2` yang sama dengan dev + trait `DatabaseTransactions` (sudah ada di `phpunit.xml`).
 > 9. `GET /api/v1/users` **sudah ada** di Phase 0 (Admin-only, paginated) — Task 5/6 Phase 1 jangan menimpanya, tapi lengkapi.
 > 10. `frontend/src/features/auth/auth-context.ts` sudah memisahkan `AuthContext` + `useAuth` dari file komponen demi aturan `react-refresh/only-export-components`. Jaga pemisahan itu.
+> 11. `AuthController::login` menolak request yang tidak punya session store dengan 403 `FORBIDDEN`. Sanctum hanya memulai session untuk request stateful (Referer/Origin cocok dengan `sanctum.stateful`), jadi login dari origin lain **tidak boleh** membuat session. Jangan hapus cek `hasSession()` — tanpa itu API menjawab 500 "Session store not set on request".
+> 12. `bootstrap/app.php` memetakan **semua** status Symfony `HttpException` ke kode error API (419 → UNAUTHENTICATED, 403 → FORBIDDEN, 404 → NOT_FOUND, 405/4xx lain → BAD_REQUEST). Kalau menambah kasus baru, tambahkan juga di sini supaya tidak jatuh ke SERVER_ERROR.
 
 
 ---
