@@ -17,8 +17,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const loginMutation = useMutation({
-    mutationFn: ({ email, password, remember }: { email: string; password: string; remember: boolean }) =>
-      loginRequest(email, password, remember),
+    mutationFn: ({
+      email,
+      password,
+      remember,
+    }: {
+      email: string
+      password: string
+      remember: boolean
+    }) => loginRequest(email, password, remember),
     onSuccess: (result) => {
       if ('data' in result) {
         queryClient.setQueryData<User>(ME_QUERY_KEY, result.data)

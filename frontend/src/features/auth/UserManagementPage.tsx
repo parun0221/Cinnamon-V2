@@ -158,9 +158,7 @@ function UserRow({ row, isSelf, pending, onChange }: UserRowProps) {
           type="button"
           className="users__toggle"
           disabled={pending || isSelf}
-          title={
-            isSelf ? 'Akun sendiri tidak dapat dinonaktifkan.' : undefined
-          }
+          title={isSelf ? 'Akun sendiri tidak dapat dinonaktifkan.' : undefined}
           onClick={() => onChange({ is_active: !row.is_active })}
         >
           {row.is_active ? 'Nonaktifkan' : 'Aktifkan'}

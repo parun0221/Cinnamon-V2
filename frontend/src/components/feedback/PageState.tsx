@@ -23,16 +23,15 @@ const DEFAULT_MESSAGES: Record<PageStateVariant, string> = {
   error: 'Silakan coba lagi. Jika masalah berlanjut, hubungi Admin.',
 }
 
-export function PageState({
-  variant,
-  title,
-  message,
-  action,
-  onRetry,
-}: PageStateProps) {
+export function PageState({ variant, title, message, action, onRetry }: PageStateProps) {
   if (variant === 'loading') {
     return (
-      <div className="page-state page-state--loading" role="status" aria-live="polite" aria-busy="true">
+      <div
+        className="page-state page-state--loading"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
         <span className="page-state__label">{title ?? DEFAULT_TITLES.loading}</span>
         <div className="page-state__skeleton" aria-hidden="true">
           <span />

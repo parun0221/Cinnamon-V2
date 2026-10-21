@@ -110,7 +110,10 @@ describe('LoginPage', () => {
 
     const alert = await screen.findByRole('alert')
 
-    expect(screen.getByLabelText('Email')).toHaveAttribute('aria-describedby', alert.getAttribute('id'))
+    expect(screen.getByLabelText('Email')).toHaveAttribute(
+      'aria-describedby',
+      alert.getAttribute('id'),
+    )
     expect(screen.getByLabelText('Email')).toHaveAttribute('aria-invalid', 'true')
   })
 
