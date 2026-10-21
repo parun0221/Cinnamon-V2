@@ -83,7 +83,7 @@ All six decisions below were confirmed before any migration or API change. Refer
 
 **Commits:** a change that touches both production and test code is committed in two commits — production first, test second — so neither diff is contaminated by the other.
 
-**Affected:** `Docs/AGENTS.md` §5 and §8, `Docs/Architecture.md` §7, `Docs/plans/2026-10-21-phase-1-foundation-and-auth.md` Global Constraints and Tasks 3, 4, 6, 7, 8, 9, 12, 13.
+**Affected:** `Docs/AGENTS.md` §5 and §8, `Docs/Architecture.md` §7, `Docs/plans/2026-10-21-phase-1-foundation-and-auth.md` Global Constraints and every task.
 
 ## 10. No new test files — verify against the running app
 
