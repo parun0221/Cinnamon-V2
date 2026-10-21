@@ -58,6 +58,8 @@ Rekomendasi urutan: backend dahulu untuk aturan data dan API dalam setiap fitur,
 
 **Ketergantungan:** Phase 0 menetapkan format ID dan auth/role assumptions yang mempengaruhi migration/API. UI shell boleh berjalan paralel setelah API auth contract disepakati.
 
+**Status: selesai (2026-10-21).** Ringkasan hasil dan verifikasi: `Docs/phase-1-done.md`. Panduan instalasi: `Docs/setup.md`.
+
 ## Phase 2 — Inventory core
 
 ### Phase 2.1 — Katalog dan parties
