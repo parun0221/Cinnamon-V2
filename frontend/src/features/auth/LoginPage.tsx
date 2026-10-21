@@ -44,7 +44,7 @@ export function LoginPage() {
         <h1>Masuk</h1>
 
         {error && (
-          <p className="login__error" role="alert">
+          <p className="login__error" id="login-error" role="alert">
             {error}
           </p>
         )}
@@ -57,6 +57,8 @@ export function LoginPage() {
             type="email"
             autoComplete="email"
             required
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'login-error' : undefined}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
@@ -70,6 +72,8 @@ export function LoginPage() {
             type="password"
             autoComplete="current-password"
             required
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'login-error' : undefined}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
