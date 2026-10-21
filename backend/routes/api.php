@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Support\ApiResponse;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/health', fn () => App\Support\ApiResponse::success([
+Route::get('/health', fn () => ApiResponse::success([
     'status' => 'ok',
 ]));
 
