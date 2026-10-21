@@ -15,6 +15,30 @@
 
 **Prasyarat (Phase 0 — dianggap sudah selesai):** `Docs/decisions.md` ada; Sanctum terpasang; `User` model sudah UUID v7 + `role` ENUM + `is_active`; migration `users` sudah char(36); seeder sudah membuat `admin@cinnamon.test` dan `karyawan@cinnamon.test` (password `password`); `routes/api.php` sudah punya `/health`; `frontend/src/lib/api/client.ts`, `frontend/src/lib/api/types.ts`, `frontend/src/features/auth/LoginPage.tsx`, `frontend/src/app/router.tsx` sudah ada.
 
+> **Status per 2026-10-21 — Phase 0 sudah dieksekusi** (branch `feat/phase-0`, commit `f882fe8`; ringkasan di `Docs/phase-0-done.md`).
+> consequence: Task 1–6 dan Task 9–10 di plan ini **sudah terpenuhi** dan tidak perlu diulang. Verifikasi ulang dengan:
+>
+> ```bash
+> cd backend && php artisan test          # 31 passed
+> cd frontend && npm test                # 17 passed
+> ```
+>
+> Yang **belum** ada dan masih jadi pekerjaan Phase 1: app shell penuh per `Docs/Design.md` §3 (sidebar + topbar + modul navigasi), `ProfilePage` dengan ganti password, endpoint `POST /api/v1/me/password`, endpoint `PATCH /api/v1/me` yang sudah ada, `UserController` lengkap (`GET/POST /users`, `GET/PATCH /users/{user}`), `NotFoundPage`, `PageState` (skeleton/empty/error), guard berbasis role di router, `prettier`, dan `Docs/setup.md`.
+>
+> Deviasi Phase 0 yang harus dihormati saat menulis task:
+>
+> 1. `App\Support\RequestId::current()` membaca dari `$request->attributes`, bukan static — jangan ganti dengan static.
+> 2. Error renderer memetakan `AccessDeniedHttpException` (bukan hanya `AuthorizationException`) ke `FORBIDDEN`, karena Laravel rewrite exception sebelum render callback jalan. Status 419 (CSRF) dipetakan dari `getStatusCode()`, bukan dari `TokenMismatchException`.
+> 3. `Auth::guard('web')` dipakai eksplisit di login dan logout — middleware `auth:sanctum` mengganti default guard ke `RequestGuard` yang tidak punya `logout()`.
+> 4. `AuthController::login` mengecek `is_active` **sebelum** `Hash::check` dan menjawab 401 dengan pesan yang sama untuk email tak dikenal, password salah, dan user non-aktif.
+> 5. Timestamp diserialisasi lewat `App\Support\Timestamp::iso8601()` (Asia/Jakarta, `+07:00`), bukan `->toIso8601String()` langsung.
+> 6. `lang/id/validation.php` + `APP_LOCALE=id` — pesan validasi tampil apa adanya di UI.
+> 7. Frontend `baseURL` default **relatif** (`''`), bukan `http://localhost:8000`, supaya trafik dev lewat Vite proxy dan cookie session tetap first-party.
+> 8. Backend test memakai `cinnamon_v2` yang sama dengan dev + trait `DatabaseTransactions` (sudah ada di `phpunit.xml`).
+> 9. `GET /api/v1/users` **sudah ada** di Phase 0 (Admin-only, paginated) — Task 5/6 Phase 1 jangan menimpanya, tapi lengkapi.
+> 10. `frontend/src/features/auth/auth-context.ts` sudah memisahkan `AuthContext` + `useAuth` dari file komponen demi aturan `react-refresh/only-export-components`. Jaga pemisahan itu.
+
+
 ---
 
 ## Global Constraints
