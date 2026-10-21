@@ -882,6 +882,37 @@ plan tidak menentukan, dan yang harus berubah.
    menulis ulang seluruh file ber-`CRLF` dan menghasilkan diff ratusan baris
    pada file yang tidak disentuh task ini.
 
+### Dari review akhir-branch
+
+Review seluruh branch menemukan delapan cacat; semuanya sudah diperbaiki dan
+diverifikasi ulang. Detailnya ada di `Docs/phase-1-done.md`.
+
+9. **Rule `boolean` Laravel tidak menormalisasi nilai.** `validated()`
+   mengembalikan `"0"` untuk request yang mengirim `"0"`, sehingga guard
+   `=== false` melewatkan tepat nilai yang seharusnya dicegat. Nilai
+   `is_active` sekarang dinormalisasi di `UpdateUserRequest`.
+   *Ini membatalkan asumsi yang tercatat di ruling Task 2 bahwa rule `boolean`
+   menormalisasi sendiri.*
+10. **Guard "tidak bisa menonaktifkan diri sendiri" diperluas ke admin
+    terakhir yang aktif.** Semula hanya berlaku pada akun pemanggil, sehingga
+    admin terakhir bisa menurunkan perannya sendiri dan meninggalkan sistem
+    tanpa admin.
+11. **Password di-hash eksplisit, bukan lewat cast `hashed`.** Cast hanya
+    menghash nilai yang belum berbentuk hash, sehingga password berstring
+    bcrypt disimpan apa adanya, dan hash dengan cost di atas `BCRYPT_ROUNDS`
+    membuat cast melempar exception — 500 untuk input pengguna.
+    *Ini meluruskan ruling Task 1 yang menyatakan `Hash::make()` tidak boleh
+    dipakai:CAST itu memang cukup untuk kasus biasa, tapi sisi bacalah yang
+    membuka lubang.*
+12. **Modul khusus Admin ditandai `adminOnly` di navigasi.** Ruling 5 di atas
+    hanya menutup entri "Pengguna"; `Docs/PRD.md` juga reservasi Master Data,
+    Penjualan, Inventori, dan Laporan untuk Admin.
+13. **Sidebar di layar sempit menjadi drawer `position: fixed`.** Sebagai blok
+    di alur normal, sidebar mendorong tombol menu keluar layar.
+14. **Session yang kedaluwarsa mengembalikan pengguna ke halaman login.**
+    Sebelumnya `isSessionExpired()` hanya dipakai test; response interceptor
+    sekarang memanggilnya dan menghapus session lokal.
+
 ---
 
 ## Self-Review Checklist
