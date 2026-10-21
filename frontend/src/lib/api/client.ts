@@ -73,6 +73,17 @@ export function toApiError(error: unknown): ApiError {
       }
     }
 
+    if (status === 429) {
+      return {
+        code: 'RATE_LIMITED',
+        message: 'Terlalu banyak percobaan masuk. Tunggu sebentar lalu coba lagi.',
+        fields: {},
+        details: {},
+        requestId: null,
+        status: 429,
+      }
+    }
+
     return parseApiError(axiosError.response?.data, status)
   }
 

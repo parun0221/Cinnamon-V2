@@ -45,6 +45,14 @@ describe('toApiError', () => {
     expect(error.requestId).toBe('req-1')
   })
 
+  it('menerjemahkan 429 menjadi pesan terlalu banyak percobaan', () => {
+    const error = toApiError(axiosErrorWithStatus(429, {}))
+
+    expect(error.status).toBe(429)
+    expect(error.code).toBe('RATE_LIMITED')
+    expect(error.message).toBe('Terlalu banyak percobaan masuk. Tunggu sebentar lalu coba lagi.')
+  })
+
   it('mengembalikan pesan jaringan untuk kegagalan tanpa respons', () => {
     const error = toApiError(new Error('network down'))
 
