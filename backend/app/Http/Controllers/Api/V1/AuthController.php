@@ -16,6 +16,24 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse
     {
+        // A session is only started for stateful requests — those whose Referer
+        // or Origin matches sanctum.stateful. Without one, logging in would
+        // throw "Session store not set on request".
+        //
+        // This check runs before the credentials are examined. Otherwise the
+        // status code would reveal whether the credentials were correct: a
+        // wrong password would answer 401 and a correct one 403, which lets an
+        // attacker confirm an email and password from an untrusted origin.
+        if (! $request->hasSession()) {
+            return ApiResponse::error(
+                'FORBIDDEN',
+                'Permintaan login harus berasal dari origin yang diizinkan.',
+                [],
+                [],
+                403,
+            );
+        }
+
         $credentials = $request->credentials();
 
         $user = User::query()->where('email', $credentials['email'])->first();
@@ -27,19 +45,6 @@ class AuthController extends Controller
                 ['email' => ['Email atau password salah.']],
                 [],
                 401,
-            );
-        }
-
-        // A session is only started for stateful requests — those whose Referer
-        // or Origin matches sanctum.stateful. Without one, logging in would
-        // throw "Session store not set on request".
-        if (! $request->hasSession()) {
-            return ApiResponse::error(
-                'FORBIDDEN',
-                'Permintaan login harus berasal dari origin yang diizinkan.',
-                [],
-                [],
-                403,
             );
         }
 
@@ -57,8 +62,13 @@ class AuthController extends Controller
         // middleware switches the default guard to `sanctum`, whose RequestGuard
         // has no logout(), so the web guard must be targeted explicitly.
         Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+
+        // A session is only present on a stateful request. Without this guard
+        // the invalidate() call below would throw "Session store not set".
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return ApiResponse::success(null);
     }

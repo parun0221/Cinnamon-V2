@@ -44,6 +44,25 @@ class HealthTest extends TestCase
         $this->assertNotEmpty($error->json('meta.request_id'));
     }
 
+    public function test_a_well_formed_client_request_id_is_echoed_back(): void
+    {
+        $id = '0192f0c0-0000-7000-8000-000000000042';
+
+        $response = $this->getJson('/api/v1/health', ['X-Request-Id' => $id]);
+
+        $this->assertSame($id, $response->json('meta.request_id'));
+        $this->assertSame($id, $response->headers->get('X-Request-Id'));
+    }
+
+    public function test_a_malformed_client_request_id_is_replaced(): void
+    {
+        $response = $this->getJson('/api/v1/health', ['X-Request-Id' => '"bad" id']);
+
+        $this->assertNotSame('"bad" id', $response->json('meta.request_id'));
+        $this->assertTrue(Str::isUuid($response->json('meta.request_id')));
+        $this->assertSame($response->json('meta.request_id'), $response->headers->get('X-Request-Id'));
+    }
+
     public function test_error_response_never_leaks_stack_trace(): void
     {
         $response = $this->getJson('/api/v1/does-not-exist');

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Sanctum only treats a request as stateful when its Referer or Origin
+      matches `sanctum.stateful`. Sending the origin (and not the full URL)
+      keeps the session cookie working without leaking the page path.
+    -->
+    <meta name="referrer" content="origin" />
     <title>CINNAMON</title>
   </head>
   <body>
