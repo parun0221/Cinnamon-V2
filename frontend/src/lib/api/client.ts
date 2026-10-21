@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
-import { parseApiError, type ApiError } from './errors'
+import { isSessionExpired, parseApiError, type ApiError } from './errors'
 import type { Envelope, PaginatedEnvelope, User, UserRole } from './types'
 
 const apiClient: AxiosInstance = axios.create({
@@ -16,6 +16,39 @@ const apiClient: AxiosInstance = axios.create({
     'X-Requested-With': 'XMLHttpRequest',
   },
 })
+
+/**
+ * Called when the server says the session is gone.
+ *
+ * Without this, a user whose session expired keeps a shell that looks
+ * signed in: the sidebar, the topbar, and the page behind it all stay on
+ * screen while every request fails, and there is no way back to the login
+ * form.
+ */
+let onSessionExpired: (() => void) | null = null
+
+export function setSessionExpiredHandler(handler: (() => void) | null): void {
+  onSessionExpired = handler
+}
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      const apiError = toApiError(error)
+
+      // A rejected login is not an expired session — the user is not signed
+      // in to begin with, and the login form shows the message itself.
+      const isLoginAttempt = error.config?.url?.includes('/auth/login')
+
+      if (!isLoginAttempt && isSessionExpired(apiError)) {
+        onSessionExpired?.()
+      }
+    }
+
+    return Promise.reject(error)
+  },
+)
 
 export async function fetchCsrf(): Promise<void> {
   await apiClient.get('/sanctum/csrf-cookie')

@@ -1,6 +1,11 @@
-import { useCallback, useMemo, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { fetchMe, login as loginRequest, logout as logoutRequest } from '../../lib/api/client'
+import {
+  fetchMe,
+  login as loginRequest,
+  logout as logoutRequest,
+  setSessionExpiredHandler,
+} from '../../lib/api/client'
 import type { User } from '../../lib/api/types'
 import { AuthContext, type AuthContextValue } from './auth-context'
 
@@ -15,6 +20,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     retry: false,
     staleTime: 1000 * 60,
   })
+
+  useEffect(() => {
+    // When the server reports the session is gone, the local session is
+    // dropped too. The auth guard then sends the user to the login form
+    // instead of leaving them on a shell that looks signed in while every
+    // request keeps failing.
+    setSessionExpiredHandler(() => {
+      queryClient.setQueryData<User | null>(ME_QUERY_KEY, null)
+    })
+
+    return () => setSessionExpiredHandler(null)
+  }, [queryClient])
 
   const loginMutation = useMutation({
     mutationFn: ({

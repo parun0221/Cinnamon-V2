@@ -143,7 +143,8 @@ function UserRow({ row, isSelf, pending, onChange }: UserRowProps) {
           id={`role-${row.id}`}
           className="users__select"
           value={row.role}
-          disabled={pending}
+          disabled={pending || isSelf}
+          title={isSelf ? 'Peran akun sendiri tidak dapat diubah.' : undefined}
           onChange={(event) => onChange({ role: event.target.value as UserRole })}
         >
           <option value="admin">Admin</option>

@@ -14,6 +14,12 @@ export interface NavGroup {
  * does not exist yet stay in the list as links to the 404 route: the roadmap
  * fixes the order, and hiding a module that is simply not built yet would be
  * less honest than showing where it will live.
+ *
+ * `adminOnly` marks the modules the Karyawan may not use, per Docs/PRD.md:
+ * the Karyawan records incoming goods and manages pending products, and
+ * cannot change master data, record sales, correct stock, read reports, or
+ * manage users. The server enforces all of it — this only keeps the menu
+ * honest.
  */
 export const navGroups: NavGroup[] = [
   {
@@ -23,10 +29,11 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Master Data',
     items: [
-      { label: 'Kategori', to: '/master/categories' },
-      { label: 'Produk', to: '/master/products' },
+      { label: 'Kategori', to: '/master/categories', adminOnly: true },
+      { label: 'Produk', to: '/master/products', adminOnly: true },
+      // The Karyawan picks a supplier when recording a receipt.
       { label: 'Supplier', to: '/master/suppliers' },
-      { label: 'Customer', to: '/master/customers' },
+      { label: 'Customer', to: '/master/customers', adminOnly: true },
     ],
   },
   {
@@ -40,26 +47,26 @@ export const navGroups: NavGroup[] = [
   {
     label: 'Penjualan',
     items: [
-      { label: 'Penjualan Baru', to: '/sales/new' },
-      { label: 'Riwayat', to: '/sales/history' },
+      { label: 'Penjualan Baru', to: '/sales/new', adminOnly: true },
+      { label: 'Riwayat', to: '/sales/history', adminOnly: true },
     ],
   },
   {
     label: 'Inventori',
     items: [
-      { label: 'Ringkasan Stok', to: '/inventory/stock' },
-      { label: 'Koreksi', to: '/inventory/adjustments' },
-      { label: 'Movement', to: '/inventory/movements' },
+      { label: 'Ringkasan Stok', to: '/inventory/stock', adminOnly: true },
+      { label: 'Koreksi', to: '/inventory/adjustments', adminOnly: true },
+      { label: 'Movement', to: '/inventory/movements', adminOnly: true },
     ],
   },
   {
     label: 'Laporan',
     items: [
-      { label: 'Penerimaan', to: '/reports/incoming' },
-      { label: 'Pengeluaran', to: '/reports/outgoing' },
-      { label: 'Stok', to: '/reports/stock' },
-      { label: 'Profit', to: '/reports/profit' },
-      { label: 'Ledger', to: '/reports/ledger' },
+      { label: 'Penerimaan', to: '/reports/incoming', adminOnly: true },
+      { label: 'Pengeluaran', to: '/reports/outgoing', adminOnly: true },
+      { label: 'Stok', to: '/reports/stock', adminOnly: true },
+      { label: 'Profit', to: '/reports/profit', adminOnly: true },
+      { label: 'Ledger', to: '/reports/ledger', adminOnly: true },
     ],
   },
   {
