@@ -59,7 +59,9 @@ All six decisions below were confirmed before any migration or API change. Refer
 
 **Justification:** user selected the "arus kas" interpretation from the two options. The legacy `buku_besars.saldo` column follows the same running-balance pattern. Debit and credit are never both positive on a single row. Balance is computed by `SUM(debit) - SUM(kredit)` windowed over `id`.
 
-**Reconciliation:** `$ledger_running_balance == $batch_qty_remaining × $batch_unit_cost + $opening_kas`.
+**Reconciliation:** `saldo_ledger + nilai_stok − 2 × nilai_koreksi = laba_kumulatif + kas_awal`, dengan `nilai_stok` = jumlah `stock_batches.quantity_remaining × unit_cost` dan `nilai_koreksi` = nilai absolut seluruh entri koreksi stok. Faktor 2 muncul karena setiap koreksi bergerak dua kali di ledger — satu di sisi kas dan satu di sisi nilai stok.
+
+Rumus lama (`balance == batch_qty_remaining × batch_unit_cost + opening_kas`) tidak bisa berlaku bersama definisi debit/kredit di atas: saldo ledger adalah posisi kas dan nilai stok adalah nilai gudang, sehingga keduanya tidak pernah saling menggantikan. Yang dibetulkan di sini adalah rumusnya, bukan definisi debit/kredit.
 
 **Affected:** Database.md row 137–139 (`balance` is the running value, not the row delta).
 
@@ -168,6 +170,22 @@ All six decisions below were confirmed before any migration or API change. Refer
 **Why:** `Docs/Database.md` §4 masih menyebut BIGINT untuk kolom ini, sementara `Docs/decisions.md` §5 menetapkan UUID v7 untuk seluruh tabel. Kolom `source_id`/`resource_id` adalah foreign key polimorfik yang menunjuk id tabel lain, jadi harus mengikuti format id yang sama supaya nilainya bisa disimpan tanpa konversi.
 
 **Affected:** `Docs/Database.md` §4, plan Phase 2.2 Task 2.
+
+## 20. Fase 2.3 — Koreksi stok, batch, dan rekonsiliasi
+
+**Koreksi stok selalu menunjuk satu batch.** Setiap baris koreksi menyebut `stock_batch_id`; pengurangan memotong `stock_batches.quantity_remaining` batch itu, penambahan menaikkan `quantity_remaining` **dan** `quantity_received` batch itu. Karena itu `SUM(stock_batches.quantity_remaining)` selalu sama dengan `products.ready_stock` — invarian yang membuat rekonsiliasi mungkin.
+
+**Hanya bucket `ready` yang boleh dikoreksi.** Stok pending adalah reservasi yang menempel pada item penerimaan (§15); mengoreksinya langsung membuat proyeksi pending tidak sinkron dengan dokumennya.
+
+**Tanda entri ledger koreksi:** koreksi masuk = `debit`, koreksi keluar = `credit`. Penandaan ini dipilih pemilik produk, dan konsekuensinya — rumus rekonsiliasi §6 perlu suku koreksi — dicatat di sana.
+
+**Admin membuat dan mem-posting koreksinya sendiri.** Tidak ada pemisahan two-eyes di MVP. Kolom `posted_by` tetap dipisah dari `created_by` supaya pemisahan itu bisa ditambahkan tanpa migrasi.
+
+**Koreksi yang sudah diposting tidak dapat dibatalkan.** Pembalikannya dibuat dengan dokumen koreksi baru memakai selisih yang berlawanan, supaya `stock_movements` tetap append-only dan kedua jejaknya terbaca.
+
+**Rekonsiliasi melaporkan, tidak memperbaiki.** `GET /inventory/stock` mengembalikan selisih antara proyeksi, sisa batch, dan movement; `php artisan inventory:reconcile` mencetak detailnya. Keduanya tidak menulis apa pun ke database.
+
+**Affected:** `Docs/API.md` §4.3, §5.4; `Docs/Database.md` §4 (`stock_adjustments`, `stock_adjustment_items`), §5, §10; `Docs/decisions.md` §6; plan Phase 2.3 Task 1–8, Task 13.
 
 ---
 
