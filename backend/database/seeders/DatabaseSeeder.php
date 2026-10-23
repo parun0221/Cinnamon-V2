@@ -15,14 +15,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->admin()->create([
-            'name' => 'Admin',
-            'email' => 'admin@cinnamon.test',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@cinnamon.test'],
+            [
+                'name' => 'Admin',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        User::factory()->karyawan()->create([
-            'name' => 'Karyawan',
-            'email' => 'karyawan@cinnamon.test',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'karyawan@cinnamon.test'],
+            [
+                'name' => 'Karyawan',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'karyawan',
+            ]
+        );
     }
 }
