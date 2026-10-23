@@ -62,9 +62,7 @@ Rekomendasi urutan: backend dahulu untuk aturan data dan API dalam setiap fitur,
 
 ## Phase 2 — Inventory core
 
-### Phase 2.1 — Katalog dan parties
-
-**Tujuan:** menyiapkan master data yang dibutuhkan penerimaan dan penjualan.
+**Status: selesai (2026-10-23).** Ringkasan hasil dan verifikasi: `Docs/phase-2-1-done.md`.
 
 **Ruang lingkup:**
 
